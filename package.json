@@ -5,7 +5,12 @@
   "module": "index.ts",
   "type": "module",
   "scripts": {
-    "app:dev": "bun run -F app dev"
+    "app:dev": "bun run -F app dev",
+    "app:build": "bun run -F app build",
+    "app:preview": "bun run -F app preview",
+    "app:cf:typecheck": "bun run -F app typecheck",
+    "app:cf:typegen": "bun run -F app cf-typegen",
+    "app:cf:deploy": "bun run -F app deploy"
   },
   "private": true,
   "devDependencies": {
