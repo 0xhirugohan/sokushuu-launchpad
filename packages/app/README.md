@@ -2,24 +2,20 @@
 
 A modern, production-ready template for building full-stack React applications using React Router.
 
-## Features
-
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
-
 ## Getting Started
+
+Copy example env file and replace the value
+
+```bash
+cp packages/app/.env.example packages/app/.dev.vars.dev
+```
 
 ### Installation
 
 Install the dependencies:
 
 ```bash
-npm install
+bun install
 ```
 
 ### Development
@@ -27,7 +23,7 @@ npm install
 Start the development server with HMR:
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 Your application will be available at `http://localhost:5173`.
@@ -37,7 +33,7 @@ Your application will be available at `http://localhost:5173`.
 Preview the production build locally:
 
 ```bash
-npm run preview
+bun run preview
 ```
 
 ## Building for Production
@@ -45,7 +41,7 @@ npm run preview
 Create a production build:
 
 ```bash
-npm run build
+bun run build
 ```
 
 ## Deployment
@@ -55,19 +51,19 @@ Deployment is done using the Wrangler CLI.
 To build and deploy directly to production:
 
 ```sh
-npm run deploy
+bun run deploy
 ```
 
 To deploy a preview URL:
 
 ```sh
-npx wrangler versions upload
+bun wrangler versions upload
 ```
 
 You can then promote a version to production after verification or roll it out progressively.
 
 ```sh
-npx wrangler versions deploy
+bun wrangler versions deploy
 ```
 
 ## Styling
