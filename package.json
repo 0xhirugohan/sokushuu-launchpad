@@ -1,7 +1,12 @@
 {
   "name": "sokushuu-launchpad",
+  "version": "0.0.1",
+  "workspaces": ["packages/*"],
   "module": "index.ts",
   "type": "module",
+  "scripts": {
+    "app:dev": "bun run -F app dev"
+  },
   "private": true,
   "devDependencies": {
     "@types/bun": "latest"
