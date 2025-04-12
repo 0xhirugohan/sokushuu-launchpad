@@ -67,6 +67,10 @@ const Wallet = () => {
     const connectWallet = async () => {
         const accounts: Address[] = await walletClient.requestAddresses();
         setAddressesState(accounts);
+
+        await walletClient.addChain({
+            chain: pharosDevnet,
+        })
     }
 
     return (
