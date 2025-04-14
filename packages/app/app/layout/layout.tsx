@@ -10,7 +10,7 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-    const [addressesState, setAddressesState] = useState<string[] | null>(["0x89eDE53aD580B0386d46dc883F78c88644990ae3"]);
+    const [addressesState, setAddressesState] = useState<string[] | null>(null);
 
     useEffect(() => {
         const getAddress = async () => {
@@ -38,7 +38,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                 Sokushuu Launchpad
             </NavLink>
             <div className="p-2 flex gap-x-2">
-                {addressesState ? <button
+                {addressesState && addressesState.length > 0 ? <button
                         className="p-2 border-2 border-zinc-600 rounded-md flex gap-x-2 cursor-pointer relative group-hover:block"
                     >
                         <span>{addressesState[0].slice(0, 4)}...{addressesState[0].slice(-4)}</span>
