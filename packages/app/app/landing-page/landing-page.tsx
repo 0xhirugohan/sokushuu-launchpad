@@ -1,9 +1,9 @@
 import { NavLink } from "react-router";
 
 const LandingPage = () => {
-    return <div className="bg-zinc-100 w-full min-h-screen flex items-center justify-center">
-        <div className="flex flex-col gap-y-8">
-            <p className="text-4xl">Welcome to Sokushuu Launchpad</p>
+    return <div className="min-w-40 bg-zinc-100 w-full min-h-screen flex items-center justify-center">
+        <div className="p-4 min-w-40 flex flex-col gap-y-8">
+            <p className="text-center text-4xl">Welcome to Sokushuu Launchpad</p>
             <p className="text-lg text-center">We are still in progress</p>
             <NavLink
                 to="/faucet"
