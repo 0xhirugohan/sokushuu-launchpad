@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import type { EIP1193Provider, Address } from "viem";
 
 import { pharosDevnet } from "~/libs/chain";
+import { Layout } from "~/layout/layout";
 import { walletClient } from "~/wallet/client.client";
 
 declare global {
@@ -34,7 +35,7 @@ const ChainPage = () => {
         }
     }
 
-    return <div className="min-h-screen w-full bg-zinc-100 p-4 flex items-center justify-center">
+    return <Layout>
         <div className="min-h-[80vh] min-w-[50vw] border-2 border-zinc-600 rounded-md p-4 flex flex-col justify-between">
             <div className="flex flex-col gap-y-8">
                 <p className="text-xl text-center">Chain Info</p>
@@ -70,7 +71,7 @@ const ChainPage = () => {
                 </button>
             </div>
         </div>
-    </div>
+    </Layout>
 };
 
 export { ChainPage }

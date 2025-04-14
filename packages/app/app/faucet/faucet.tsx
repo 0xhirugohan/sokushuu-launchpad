@@ -3,6 +3,7 @@ import { useFetcher, useLoaderData } from "react-router";
 import { createPublicClient, http, formatEther, parseEther } from "viem";
 
 import { pharosDevnet } from "~/libs/chain";
+import { Layout } from "~/layout/layout";
 
 const Faucet = () => {
     const fetcher = useFetcher();
@@ -65,7 +66,7 @@ const Faucet = () => {
     }, []);
 
     return (
-        <div className="bg-zinc-100 w-full min-h-screen flex items-center justify-center">
+        <Layout>
             <fetcher.Form
                 className="p-8 w-[80vw] md:w-[40vw] min-h-[80vh] border-2 border-zinc-600 flex flex-col justify-between rounded-lg"
                 method="POST"
@@ -114,7 +115,7 @@ const Faucet = () => {
                     }
                 </div>
             </fetcher.Form>
-        </div>
+        </Layout>
     )
 }
 

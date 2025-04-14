@@ -19,6 +19,7 @@ body {
   }
 
   color: black;
+  background-color: theme('colors.zinc.100');
 
   font-family: "Excalifont", sans-serif;
 }
