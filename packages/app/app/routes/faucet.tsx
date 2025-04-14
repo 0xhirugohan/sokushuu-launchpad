@@ -4,16 +4,17 @@ import { privateKeyToAccount } from "viem/accounts";
 import { pharosDevnet } from "~/libs/chain";
 import type { Route } from "./+types/faucet";
 import { Faucet as FaucetPage } from "../faucet/faucet";
+import { setUserLatestFaucetClaim } from "../faucet/kv";
+import { isUserEligibleToClaimFaucet } from "~/libs/faucet";
 
 export function meta({}: Route.MetaArgs) {
     return [
-        { title: "New React Router App" },
-        { name: "description", content: "Welcome to React Router!" }
+        { title: "Sokushuu Launcpad - Faucet" },
+        { name: "description", content: "Need some Pharos faucet? Afraid not, we got you covered!" }
     ];
 }
 
-export function loader({ context, params }: Route.LoaderArgs) {
-    console.log({ params })
+export async function loader({ context, params }: Route.LoaderArgs) {
     return {};
 }
 
@@ -30,6 +31,15 @@ export async function action({
             message: "Address is not valid"
         }
     }
+    const isUserEligible = await isUserEligibleToClaimFaucet(context, toAddress);
+    if (!isUserEligible) {
+        return {
+            address: formData.get("address"),
+            hash: null,
+            message: "You can only claim once in every 24 hours",
+            ok: false,
+        }
+    }
 
     try {
         const faucetPrivateKey = context.cloudflare.env.FAUCET_PRIVATE_KEY;
@@ -44,6 +54,7 @@ export async function action({
             to: toAddress as `0x${string}`,
             value: parseEther("0.01"),
         })
+        await setUserLatestFaucetClaim(context, toAddress);
         return {
             address: formData.get("address"),
             hash,
@@ -59,8 +70,6 @@ export async function action({
             ok: false,
         }
     }
-
-    
 }
 
 export default function Faucet({

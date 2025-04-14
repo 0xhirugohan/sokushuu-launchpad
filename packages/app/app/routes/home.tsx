@@ -1,11 +1,12 @@
 import type { Route } from "./+types/home";
 import { Welcome } from "../welcome/welcome";
 import { Wallet } from "../wallet/wallet";
+import { LandingPage } from "~/landing-page/landing-page";
 
 export function meta({}: Route.MetaArgs) {
   return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
+    { title: "Sokushuu Launchpad" },
+    { name: "description", content: "Welcome to Sokushuu Launchpad!" },
   ];
 }
 
@@ -18,5 +19,5 @@ export function loader({ context }: Route.LoaderArgs) {
 
 export default function Home({ loaderData }: Route.ComponentProps) {
   // return <Welcome message={loaderData.message} appVersion={loaderData.appVersion} />;
-  return <Wallet />
+  return <LandingPage />
 }
