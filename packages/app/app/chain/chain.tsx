@@ -1,0 +1,76 @@
+"use client"
+
+import { useEffect, useState } from "react";
+import type { EIP1193Provider, Address } from "viem";
+
+import { pharosDevnet } from "~/libs/chain";
+import { walletClient } from "~/wallet/client.client";
+
+declare global {
+    interface Window {
+        ethereum: EIP1193Provider;
+    }
+}
+
+const ChainPage = () => {
+    const [stateAddresses, setStateAddresses] = useState<Address[] | null>();
+
+    useEffect(() => {
+        const getAddresses = async () => {
+            const addresses = await walletClient.getAddresses();
+            setStateAddresses(addresses);
+        }
+        getAddresses();
+    }, [])
+
+    const handleAddChain = async () => {
+        if (stateAddresses && stateAddresses.length > 0) {
+            // disconnect
+            setStateAddresses(null);
+        } else {
+            const addresses = await walletClient.requestAddresses();
+            setStateAddresses(addresses);
+            await walletClient.addChain({ chain: pharosDevnet })
+        }
+    }
+
+    return <div className="min-h-screen w-full bg-zinc-100 p-4 flex items-center justify-center">
+        <div className="min-h-[80vh] min-w-[50vw] border-2 border-zinc-600 rounded-md p-4 flex flex-col justify-between">
+            <div className="flex flex-col gap-y-8">
+                <p className="text-xl text-center">Chain Info</p>
+                <div className="flex flex-col gap-y-4">
+                    <div>
+                        <p>RPC Public Endpoint</p>
+                        <a
+                            className="underline"
+                            href={pharosDevnet.rpcUrls.default.http[0] as string}>
+                            {pharosDevnet.rpcUrls.default.http[0]}
+                        </a>
+                    </div>
+                    <div>
+                        <p>Explorer</p>
+                        <a
+                            className="underline"
+                            href={pharosDevnet.blockExplorers.default.url}>
+                            {pharosDevnet.blockExplorers.default.url}
+                        </a>
+                    </div>
+                    <div>
+                        <p>ChainID</p>
+                        <p>{pharosDevnet.id}</p>
+                    </div>
+                </div>
+            </div>
+            <div className="flex flex-col gap-y-4">
+                <button
+                    onClick={handleAddChain}
+                    className="border-2 border-zinc-600 p-2 rounded-md cursor-pointer"
+                >
+                    { stateAddresses && stateAddresses.length > 0 ? "Connected" : "Add to Wallet" }
+                </button>
+            </div>
+        </div>
+    </div>
+};
+
+export { ChainPage }
