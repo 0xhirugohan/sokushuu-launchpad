@@ -1,6 +1,7 @@
 import { createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { State } from "wagmi";
+import { getBalance } from "@wagmi/core";
 
 import { pharosDevnet } from "~/libs/chain";
 import type { Route } from "./+types/faucet";
@@ -8,6 +9,10 @@ import { Faucet as FaucetPage } from "../faucet/faucet";
 import { setUserLatestFaucetClaim } from "../faucet/kv";
 import { isUserEligibleToClaimFaucet } from "~/libs/faucet";
 import { getWalletStateFromCookie } from "~/libs/cookie";
+import { walletConfig } from "~/libs/wallet";
+
+const MAXIMUM_ETH_BALANCE_TO_CLAIM_FAUCET = parseEther('1');
+const FAUCET_DRIP_AMOUNT_IN_ETH = parseEther('0.01');
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -17,8 +22,23 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export async function loader({ context, params, request }: Route.LoaderArgs) {
+    const faucetAccount = privateKeyToAccount(context.cloudflare.env.FAUCET_PRIVATE_KEY as `0x${string}`);
+    const faucetWalletAddress = faucetAccount.address;
+    const faucetBalance = await getBalance(walletConfig, {
+        address: faucetWalletAddress,
+    });
     const initialState = await getWalletStateFromCookie({ request });
-    return { initialState };
+    return {
+        initialState,
+        faucet: {
+            balance: faucetBalance.value,
+            address: faucetWalletAddress
+        },
+        constant: {
+            MAXIMUM_ETH_BALANCE_TO_CLAIM_FAUCET,
+            FAUCET_DRIP_AMOUNT_IN_ETH,
+        },
+    };
 }
 
 export async function action({
@@ -65,7 +85,6 @@ export async function action({
             ok: true,
         };
     } catch (err) {
-        console.log({ err });
         return {
             address: formData.get("address"),
             hash: null,
@@ -78,5 +97,9 @@ export async function action({
 export default function Faucet({
     loaderData,
 }: Route.ComponentProps) {
-    return <FaucetPage initialState={loaderData.initialState as State | undefined} />
+    return <FaucetPage
+        initialState={loaderData.initialState as State | undefined}
+        faucet={loaderData.faucet}
+        constant={loaderData.constant}
+    />
 }

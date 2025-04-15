@@ -1,60 +1,77 @@
 import { useEffect, useState, type ChangeEvent } from "react";
 import type React from "react";
-import { useFetcher } from "react-router";
-import { createPublicClient, http, formatEther, parseEther } from "viem";
+import { useFetcher, useSubmit } from "react-router";
 import type { State } from "wagmi";
+import { getBalance } from "@wagmi/core";
+import { createPublicClient, http, formatEther } from "viem";
 
 import { pharosDevnet } from "~/libs/chain";
 import { Layout } from "~/layout/layout";
+import { walletConfig } from "~/libs/wallet";
 
 interface FaucetPageProps {
     initialState: State | undefined;
+    faucet: { balance: bigint; address: `0x${string}` };
+    constant: {
+        MAXIMUM_ETH_BALANCE_TO_CLAIM_FAUCET: bigint;
+        FAUCET_DRIP_AMOUNT_IN_ETH: bigint;
+    };
 }
 
-const Faucet: React.FC<FaucetPageProps> = ({ initialState }) => {
+const Faucet: React.FC<FaucetPageProps> = ({ initialState, faucet, constant }) => {
+    const submit = useSubmit();
     const fetcher = useFetcher();
     const [inputAddress, setInputAddress] = useState<string>();
     const [addressBalance, setAddressBalance] = useState<bigint>();
-    const [faucetBalance, setFaucetBalance] = useState<bigint>();
+    const [faucetBalance, setFaucetBalance] = useState<bigint>(faucet.balance);
     const message = fetcher.data?.message;
     const txHash = fetcher.data?.hash;
     const apiOk = fetcher.data?.ok;
-    const faucetAddress = "0x82e1530f26CfEFA6fBF43F4DCdE35A1692ee629c";
 
-    const handleInputAddressChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const handleInputAddressChange = async (event: ChangeEvent<HTMLInputElement>) => {
         setInputAddress(event.currentTarget.value);
+        setAddressBalance(BigInt(0));
+
+        if (/^0x[a-fA-F0-9]{40}$/.test(event.currentTarget.value ?? '')) {
+            const newInputBalance = await getBalance(walletConfig, {
+                address: event.currentTarget.value as `0x${string}`
+            });
+            setAddressBalance(newInputBalance.value);
+        }
     }
 
-    const isBalanceHasSufficientETH = (balanceProp: bigint) => 
-        balanceProp >= BigInt(parseEther("0.1"))
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        if (!/^0x[a-fA-F0-9]{40}$/.test(inputAddress ?? '')) {
+            alert("Address format is not valid");
+            return;
+        }
 
-    const getBalances = async () => {
-        const client = createPublicClient({
-            chain: pharosDevnet,
-            transport: http(),
-        })
-
-        const balancePromise = client.getBalance({
+        const faucetBalancePromise = getBalance(walletConfig, {
+            address: faucet.address,
+        });
+        const inputBalancePromise = getBalance(walletConfig, {
             address: inputAddress as `0x${string}`,
         });
-        const faucetBalancePromise = client.getBalance({
-            address: faucetAddress as `0x${string}`,
-        });
-        const [balance, faucets] = await Promise.all([balancePromise, faucetBalancePromise]);
-        setAddressBalance(balance);
-        setFaucetBalance(faucets);
-    }
+        const [newFaucetBalance, newInputBalance] = await Promise.all([
+            faucetBalancePromise,
+            inputBalancePromise,
+        ]);
 
-    getBalances();
+        setFaucetBalance(newFaucetBalance.value);
+        setAddressBalance(newInputBalance.value);
 
-    useEffect(() => {
-        if (inputAddress && /^0x[a-fA-F0-9]{40}$/.test(inputAddress)) {
-            // get balance
-            getBalances();
-        } else {
-            setAddressBalance(undefined);
+        if (newFaucetBalance.value < constant.FAUCET_DRIP_AMOUNT_IN_ETH) {
+            alert("Faucet has insufficient balance");
+            return;
         }
-    }, [inputAddress]);
+
+        if (newInputBalance.value >= constant.MAXIMUM_ETH_BALANCE_TO_CLAIM_FAUCET) {
+            alert("You have an enough balance");
+            return;
+        }
+
+        submit(event.currentTarget);
+    }
 
     useEffect(() => {
         // get balance
@@ -64,7 +81,7 @@ const Faucet: React.FC<FaucetPageProps> = ({ initialState }) => {
         })
         const getBalance = async () => {
             const faucets = await client.getBalance({
-                address: faucetAddress as `0x${string}`,
+                address: faucet.address,
             });
             setFaucetBalance(faucets);
         }
@@ -76,6 +93,7 @@ const Faucet: React.FC<FaucetPageProps> = ({ initialState }) => {
             <fetcher.Form
                 className="p-8 w-[80vw] md:w-[40vw] min-h-[80vh] border-2 border-zinc-600 flex flex-col justify-between rounded-lg"
                 method="POST"
+                onSubmit={handleSubmit}
             >
                 <div className="flex flex-col gap-y-8">
                     <p className="text-xl">Faucet</p>
@@ -85,7 +103,7 @@ const Faucet: React.FC<FaucetPageProps> = ({ initialState }) => {
                             name="faucet_address"
                             className="w-full p-4 border-2 border-zinc-600 rounded-lg"
                             type="text"
-                            value={faucetAddress}
+                            value={faucet.address}
                             disabled
                         />
                         {faucetBalance !== undefined && <p>Balance: {formatEther(faucetBalance)} ETH</p>}
@@ -109,16 +127,14 @@ const Faucet: React.FC<FaucetPageProps> = ({ initialState }) => {
                         {message && <p className={!apiOk ? 'text-red-500' : ''}>{message}</p>}
                         {txHash && <a className="underline" href={`https://pharosscan.xyz/tx/${txHash}`}>{txHash.slice(0, 4)}...{txHash.slice(-4)}</a>}
                     </div>
-                    {   addressBalance && isBalanceHasSufficientETH(addressBalance!) ? <p>You have an enough ETH</p> : 
-                        <button
-                            name="claim"
-                            type="submit"
-                            className="p-4 border-2 border-zinc-600 rounded-lg cursor-pointer hover:opacity-70"
-                            disabled={fetcher.state !== "idle" || isBalanceHasSufficientETH(addressBalance!)}
-                        >
-                            {fetcher.state !== "idle" ? "Claiming" : "Claim"}
-                        </button>
-                    }
+                    <button
+                        name="claim"
+                        type="submit"
+                        className="p-4 border-2 border-zinc-600 rounded-lg cursor-pointer hover:opacity-70"
+                        disabled={fetcher.state !== "idle"}
+                    >
+                        {fetcher.state !== "idle" ? "Claiming" : "Claim"}
+                    </button>
                 </div>
             </fetcher.Form>
         </Layout>
