@@ -11,11 +11,15 @@
 		"typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
 	},
 	"dependencies": {
+		"@tanstack/react-query": "^5.74.3",
+		"@wagmi/connectors": "^5.7.12",
+		"@wagmi/core": "^2.16.7",
 		"isbot": "^5.1.17",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"react-router": "^7.5.0",
-		"viem": "^2.26.3"
+		"viem": "^2.26.3",
+		"wagmi": "^2.14.16"
 	},
 	"devDependencies": {
 		"@cloudflare/vite-plugin": "^1.0.0",

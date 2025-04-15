@@ -1,19 +1,19 @@
 "use client"
 
 import { useEffect, useState } from "react";
-import type { EIP1193Provider, Address } from "viem";
+import type React from "react";
+import type { Address } from "viem";
+import type { State } from "wagmi";
 
 import { pharosDevnet } from "~/libs/chain";
 import { Layout } from "~/layout/layout";
 import { walletClient } from "~/wallet/client.client";
 
-declare global {
-    interface Window {
-        ethereum: EIP1193Provider;
-    }
+interface ChainPageProps {
+    initialState: State | undefined;
 }
 
-const ChainPage = () => {
+const ChainPage: React.FC<ChainPageProps> = ({ initialState }) => {
     const [stateAddresses, setStateAddresses] = useState<Address[] | null>();
 
     useEffect(() => {
@@ -35,7 +35,7 @@ const ChainPage = () => {
         }
     }
 
-    return <Layout>
+    return <Layout initialState={initialState}>
         <div className="min-h-[80vh] min-w-[50vw] border-2 border-zinc-600 rounded-md p-4 flex flex-col justify-between">
             <div className="flex flex-col gap-y-8">
                 <p className="text-xl text-center">Chain Info</p>

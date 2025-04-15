@@ -1,68 +1,28 @@
-import type React from "react";
-import { useEffect, useState } from "react";
-import { NavLink } from "react-router";
+import { type ReactNode } from "react";
+import { type State, WagmiProvider } from "wagmi";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import WalletIcon from "../icons/wallet.svg";
-import { walletClient } from "~/wallet/client.client";
+import { walletConfig } from "~/libs/wallet";
+import { WalletLayout } from "./walletLayout";
 
 interface LayoutProps {
-    children: React.ReactNode;
+    children: ReactNode;
+    initialState: State | undefined;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
-    const [addressesState, setAddressesState] = useState<string[] | null>(null);
+const queryClient = new QueryClient();
 
-    useEffect(() => {
-        const getAddress = async () => {
-            const addresses = await walletClient.getAddresses();
-            setAddressesState(addresses);
-        }
-        getAddress();
-    }, []);
-
-    const handleLogout = () => {
-        setAddressesState(null);
-    }
-
-    const handleConnect = async () => {
-        const addresses = await walletClient.requestAddresses();
-        setAddressesState(addresses);
-    }
-
-    return <div className="relative min-w-40 w-full">
-        <div className="absolute top-0 inset-x-0 flex justify-between">
-            <NavLink
-                to="/"
-                className="p-2 flex items-center justify-center"
-            >
-                Sokushuu Launchpad
-            </NavLink>
-            <div className="p-2 flex gap-x-2">
-                {addressesState && addressesState.length > 0 ? <button
-                        className="p-2 border-2 border-zinc-600 rounded-md flex gap-x-2 cursor-pointer relative group-hover:block"
-                    >
-                        <span>{addressesState[0].slice(0, 4)}...{addressesState[0].slice(-4)}</span>
-                        <img src={WalletIcon} />
-                        <button
-                            onClick={handleLogout}
-                            className="hidden in-[button:hover]:block absolute top-12 inset-x-0 p-2 border-2 border-zinc-600 rounded-md cursor-pointer"
-                        >
-                            logout
-                        </button>
-                    </button> : <button
-                        onClick={handleConnect}
-                        className="p-2 border-2 border-zinc-600 rounded-md flex gap-x-2 cursor-pointer"
-                    >
-                        <span>Connect Wallet</span>
-                        <img src={WalletIcon} />
-                    </button>
-                }
+const Layout: React.FC<LayoutProps> = ({ children, initialState }) => {
+    return <WagmiProvider config={walletConfig} initialState={initialState}>
+        <QueryClientProvider client={queryClient}>
+            <div className="relative min-w-40 w-full">
+                <WalletLayout />
+                <div className="flex items-center justify-center min-h-screen">
+                    {children}
+                </div>
             </div>
-        </div>
-        <div className="flex items-center justify-center min-h-screen">
-            {children}
-        </div>
-    </div>
+        </QueryClientProvider>
+    </WagmiProvider>
 }
 
-export { Layout };
+export { Layout, type LayoutProps };

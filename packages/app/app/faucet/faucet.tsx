@@ -1,11 +1,17 @@
 import { useEffect, useState, type ChangeEvent } from "react";
-import { useFetcher, useLoaderData } from "react-router";
+import type React from "react";
+import { useFetcher } from "react-router";
 import { createPublicClient, http, formatEther, parseEther } from "viem";
+import type { State } from "wagmi";
 
 import { pharosDevnet } from "~/libs/chain";
 import { Layout } from "~/layout/layout";
 
-const Faucet = () => {
+interface FaucetPageProps {
+    initialState: State | undefined;
+}
+
+const Faucet: React.FC<FaucetPageProps> = ({ initialState }) => {
     const fetcher = useFetcher();
     const [inputAddress, setInputAddress] = useState<string>();
     const [addressBalance, setAddressBalance] = useState<bigint>();
@@ -66,7 +72,7 @@ const Faucet = () => {
     }, []);
 
     return (
-        <Layout>
+        <Layout initialState={initialState}>
             <fetcher.Form
                 className="p-8 w-[80vw] md:w-[40vw] min-h-[80vh] border-2 border-zinc-600 flex flex-col justify-between rounded-lg"
                 method="POST"

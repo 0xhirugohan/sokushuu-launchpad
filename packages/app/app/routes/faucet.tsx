@@ -1,11 +1,13 @@
 import { createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import type { State } from "wagmi";
 
 import { pharosDevnet } from "~/libs/chain";
 import type { Route } from "./+types/faucet";
 import { Faucet as FaucetPage } from "../faucet/faucet";
 import { setUserLatestFaucetClaim } from "../faucet/kv";
 import { isUserEligibleToClaimFaucet } from "~/libs/faucet";
+import { getWalletStateFromCookie } from "~/libs/cookie";
 
 export function meta({}: Route.MetaArgs) {
     return [
@@ -14,8 +16,9 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-export async function loader({ context, params }: Route.LoaderArgs) {
-    return {};
+export async function loader({ context, params, request }: Route.LoaderArgs) {
+    const initialState = await getWalletStateFromCookie({ request });
+    return { initialState };
 }
 
 export async function action({
@@ -73,7 +76,7 @@ export async function action({
 }
 
 export default function Faucet({
-    actionData
+    loaderData,
 }: Route.ComponentProps) {
-    return <FaucetPage />
+    return <FaucetPage initialState={loaderData.initialState as State | undefined} />
 }

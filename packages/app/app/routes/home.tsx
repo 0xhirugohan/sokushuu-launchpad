@@ -1,7 +1,8 @@
+import { type State } from "wagmi";
+
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
-import { Wallet } from "../wallet/wallet";
 import { LandingPage } from "~/landing-page/landing-page";
+import { getWalletStateFromCookie } from "~/libs/cookie";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -10,14 +11,15 @@ export function meta({}: Route.MetaArgs) {
   ];
 }
 
-export function loader({ context }: Route.LoaderArgs) {
+export async function loader({ context, request }: Route.LoaderArgs) {
+  const initialState = await getWalletStateFromCookie({ request });
   return {
     message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE,
     appVersion: context.cloudflare.env.APP_VERSION,
+    initialState,
   };
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  // return <Welcome message={loaderData.message} appVersion={loaderData.appVersion} />;
-  return <LandingPage />
+  return <LandingPage initialState={loaderData.initialState as State | undefined} />
 }
