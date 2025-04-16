@@ -2,15 +2,25 @@
 src = "src"
 out = "out"
 libs = ["dependencies"]
-remappings = ["forge-std/=dependencies/forge-std-1.9.6/src/"]
+remappings = [
+    "@openzeppelin/=dependencies/@openzeppelin-contracts-5.3.0/",
+    "forge-std/=dependencies/forge-std-1.9.6/src/",
+]
 
 [dependencies]
 forge-std = "1.9.6"
+"@openzeppelin-contracts" = "5.3.0"
 
 [soldeer]
 remappings_generate = true
 remappings_regenerate = false
 remappings_version = false
 remappings_location = "config"
+
+[rpc_endpoints]
+pharos-devnet = "https://devnet.dplabs-internal.com/"
+
+[etherscan]
+pharos-devnet = { key = "XXX", url = "https://pharosscan.xyz/api", chain = 50002 }
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
