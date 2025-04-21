@@ -71,7 +71,7 @@ contract NFTLaunchManagerTest is Test {
         return nftAddress;
     }
 
-    function test_listTokenToSell() public {
+    function test_listTokenToSell() public returns (address, uint256) {
         uint256 tokenId = 0;
         address nftAddress = test_mintContractToOther();
 
@@ -82,5 +82,18 @@ contract NFTLaunchManagerTest is Test {
 
         assertEq(nftLaunchManager.isTokenOnSale(nftAddress, tokenId), true);
         assertEq(nftLaunchManager.getTokenSalePrice(nftAddress, tokenId), 1 ether);
+
+        return (nftAddress, tokenId);
+    }
+
+    function test_cancelTokenListing() public {
+        (address nftAddress, uint256 tokenId) = test_listTokenToSell();
+
+        vm.startPrank(bob);
+        nftLaunchManager.cancelTokenListing(nftAddress, tokenId);
+        vm.stopPrank();
+
+        assertEq(nftLaunchManager.getTokenSalePrice(nftAddress, tokenId), 0);
+        assertEq(nftLaunchManager.isTokenOnSale(nftAddress, tokenId), false);
     }
 }

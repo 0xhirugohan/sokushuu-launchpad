@@ -13,6 +13,7 @@ contract NFTLaunchManager is Ownable {
     event DeployNFT(address indexed owner, address indexed contractAddress);
     event MintNFT(address indexed contractAddress, address indexed owner, address to);
     event ListingToken(address indexed contractAddress, uint256 indexed tokenId, uint256 priceInEther);
+    event CancelListing(address indexed contractAddress, uint256 indexed tokenId);
 
     string constant NFT_BASE_URI = "https://launchpad-dev.sokushuu.dev/api/nft/";
 
@@ -38,6 +39,8 @@ contract NFTLaunchManager is Ownable {
     error ErrorNFTLaunchManager__WrongOwnerOfToken();
 
     error ErrorNFTLaunchManager__InsufficientTokenSendApproval();
+
+    error ErrorNFTLaunchManager__TokenIsNotOnSale();
 
     constructor(address initialOwner) Ownable(initialOwner) {}
 
@@ -125,6 +128,29 @@ contract NFTLaunchManager is Ownable {
 
         // emit event
         emit ListingToken(nftContract, tokenId, priceInEther);
+    }
+
+    function cancelTokenListing(address nftContract, uint256 tokenId) public {
+        if (nftContract == address(0)) {
+            revert ErrorNFTLaunchManager__AddressIsZero();
+        }
+
+        if (_contractOwner[nftContract] == address(0)) {
+            revert ErrorNFTLaunchManager__NFTContractIsNotRegistered();
+        }
+
+        if (IERC721(nftContract).ownerOf(tokenId) != msg.sender) {
+            revert ErrorNFTLaunchManager__WrongOwnerOfToken();
+        }
+
+        if (!_isTokenOnSale[nftContract][tokenId]) {
+            revert ErrorNFTLaunchManager__TokenIsNotOnSale();
+        }
+
+        _isTokenOnSale[nftContract][tokenId] = false;
+        _tokenSalePrice[nftContract][tokenId] = 0;
+
+        emit CancelListing(nftContract, tokenId);
     }
 
     function _getUserContractAmount(address user) internal view returns (uint256) {
