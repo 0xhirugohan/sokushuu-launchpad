@@ -71,28 +71,45 @@ contract NFTLaunchManagerTest is Test {
         return nftAddress;
     }
 
-    function test_listTokenToSell() public returns (address, uint256) {
+    function test_listTokenToSell() public returns (address, uint256, uint256) {
         uint256 tokenId = 0;
         address nftAddress = test_mintContractToOther();
+        uint256 tokenPrice = 1 ether;
 
         vm.startPrank(bob);
         IERC721(nftAddress).approve(address(nftLaunchManager), tokenId);
-        nftLaunchManager.listTokenToSell(nftAddress, tokenId, 1 ether);
+        nftLaunchManager.listTokenToSell(nftAddress, tokenId, tokenPrice);
         vm.stopPrank();
 
         assertEq(nftLaunchManager.isTokenOnSale(nftAddress, tokenId), true);
         assertEq(nftLaunchManager.getTokenSalePrice(nftAddress, tokenId), 1 ether);
 
-        return (nftAddress, tokenId);
+        return (nftAddress, tokenId, tokenPrice);
     }
 
     function test_cancelTokenListing() public {
-        (address nftAddress, uint256 tokenId) = test_listTokenToSell();
+        (address nftAddress, uint256 tokenId, ) = test_listTokenToSell();
 
         vm.startPrank(bob);
         nftLaunchManager.cancelTokenListing(nftAddress, tokenId);
         vm.stopPrank();
 
+        assertEq(nftLaunchManager.getTokenSalePrice(nftAddress, tokenId), 0);
+        assertEq(nftLaunchManager.isTokenOnSale(nftAddress, tokenId), false);
+    }
+
+    function test_buyListedToken() public {
+        (address nftAddress, uint256 tokenId, uint256 tokenPrice) = test_listTokenToSell();
+
+        uint256 aliceBalance = alice.balance;
+        uint256 bobBalance = bob.balance;
+
+        vm.startPrank(alice);
+        nftLaunchManager.buyListedToken{value: tokenPrice}(nftAddress, tokenId);
+        vm.stopPrank();
+
+        assertEq(alice.balance, aliceBalance - tokenPrice);
+        assertEq(bob.balance, bobBalance + tokenPrice);
         assertEq(nftLaunchManager.getTokenSalePrice(nftAddress, tokenId), 0);
         assertEq(nftLaunchManager.isTokenOnSale(nftAddress, tokenId), false);
     }

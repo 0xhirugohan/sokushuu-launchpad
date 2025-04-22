@@ -14,6 +14,7 @@ contract NFTLaunchManager is Ownable {
     event MintNFT(address indexed contractAddress, address indexed owner, address to);
     event ListingToken(address indexed contractAddress, uint256 indexed tokenId, uint256 priceInEther);
     event CancelListing(address indexed contractAddress, uint256 indexed tokenId);
+    event BuyListedToken(address indexed buyer, address indexed contractAddress, uint256 tokenId);
 
     string constant NFT_BASE_URI = "https://launchpad-dev.sokushuu.dev/api/nft/";
 
@@ -41,6 +42,12 @@ contract NFTLaunchManager is Ownable {
     error ErrorNFTLaunchManager__InsufficientTokenSendApproval();
 
     error ErrorNFTLaunchManager__TokenIsNotOnSale();
+
+    error ErrorNFTLaunchManager__WrongPaymentAmount(uint256 required, uint256 provided);
+
+    error ErrorNFTLaunchManager__BuyerIsOwner();
+
+    error ErrorNFTLaunchManager__PaymentTransferFailed();
 
     constructor(address initialOwner) Ownable(initialOwner) {}
 
@@ -151,6 +158,47 @@ contract NFTLaunchManager is Ownable {
         _tokenSalePrice[nftContract][tokenId] = 0;
 
         emit CancelListing(nftContract, tokenId);
+    }
+
+    function buyListedToken(address nftContract, uint256 tokenId) public payable {
+        if (nftContract == address(0)) {
+            revert ErrorNFTLaunchManager__AddressIsZero();
+        }
+
+        if (_contractOwner[nftContract] == address(0)) {
+            revert ErrorNFTLaunchManager__NFTContractIsNotRegistered();
+        }
+
+        if (IERC721(nftContract).getApproved(tokenId) != address(this)) {
+            revert ErrorNFTLaunchManager__InsufficientTokenSendApproval();
+        }
+
+        if (!isTokenOnSale(nftContract, tokenId)) {
+            revert ErrorNFTLaunchManager__TokenIsNotOnSale();
+        }
+
+        address seller = IERC721(nftContract).ownerOf(tokenId);
+        uint256 price = getTokenSalePrice(nftContract, tokenId);
+
+        if (msg.sender == seller) {
+            revert ErrorNFTLaunchManager__BuyerIsOwner();
+        }
+
+        if (msg.value != price) {
+            revert ErrorNFTLaunchManager__WrongPaymentAmount(price, msg.value);
+        }
+
+        _isTokenOnSale[nftContract][tokenId] = false;
+        _tokenSalePrice[nftContract][tokenId] = 0;
+
+        (bool success, ) = payable(seller).call{value: price}("");
+        if (!success) {
+            revert ErrorNFTLaunchManager__PaymentTransferFailed();
+        }
+
+        IERC721(nftContract).safeTransferFrom(seller, msg.sender, tokenId);
+
+        emit BuyListedToken(msg.sender, nftContract, tokenId);
     }
 
     function _getUserContractAmount(address user) internal view returns (uint256) {
