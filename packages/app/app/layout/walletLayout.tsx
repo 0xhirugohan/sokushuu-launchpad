@@ -1,4 +1,5 @@
 import type React from "react";
+import { useEffect } from "react";
 import { NavLink } from "react-router";
 import {
     useAccount,
@@ -7,22 +8,36 @@ import {
     useAccountEffect,
     useSwitchChain,
 } from "wagmi";
+import { type Address } from "viem";
 
 import WalletIcon from "../icons/wallet.svg";
 import { walletConfig } from "~/libs/wallet";
 
-const WalletLayout: React.FC = () => {
+interface WalletLayoutProps {
+    setAddressProp: (address: Address | undefined) => void;
+}
+
+const WalletLayout: React.FC<WalletLayoutProps> = ({ setAddressProp }) => {
     const { address } = useAccount({ config: walletConfig });
     const { connectors, connect } = useConnect({ config: walletConfig });
     const { disconnect } = useDisconnect({ config: walletConfig });
     const { switchChain } = useSwitchChain();
+
+    useEffect(() => {
+        setAddressProp(address);
+    }, [address])
 
     useAccountEffect({
         onConnect(data) {
             if (data.chainId !== walletConfig.chains[0].id) {
                 switchChain({ chainId: walletConfig.chains[0].id });
             }
-        }
+
+            setAddressProp(data.address);
+        },
+        onDisconnect() {
+            setAddressProp(undefined);
+        },
     })
 
     const handleLogout = async () => {

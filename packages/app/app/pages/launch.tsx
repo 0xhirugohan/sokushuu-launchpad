@@ -24,7 +24,7 @@ const LaunchPage: React.FC<LandingPageProps> = ({ initialState, nftContracts }) 
     const fetcherGeneratedType = fetcher.data?.generatedType;
     const fetcherGenerated = fetcher.data?.generated;
 
-    return <Layout initialState={initialState}>
+    return <Layout initialState={initialState} isLoginRequired={true}>
         {
             userOwnedContracts.length != 0 ? <CreateNFTContract /> : <div className="flex flex-col gap-y-8">
                 {
