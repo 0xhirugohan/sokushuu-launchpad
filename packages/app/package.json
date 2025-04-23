@@ -8,7 +8,7 @@
 		"deploy": "bun run build && wrangler deploy",
 		"dev": "export CLOUDFLARE_ENV=dev && react-router dev",
 		"preview": "bun run build && vite preview",
-		"typecheck": "npm run cf-typegen && react-router typegen && tsc -b"
+		"typecheck": "bun run cf-typegen && react-router typegen && tsc -b"
 	},
 	"dependencies": {
 		"@tanstack/react-query": "^5.74.3",

@@ -13,7 +13,8 @@
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare default",
 		"APP_VERSION": "default-vars-version",
-		"FAUCET_PRIVATE_KEY": "default-faucet-private-key"
+		"FAUCET_PRIVATE_KEY": "default-faucet-private-key",
+		"GEMINI_API_KEY": "default-gemini-api-key"
 	},
 	"observability": {
 		"enabled": true
