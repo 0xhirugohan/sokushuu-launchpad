@@ -71,24 +71,21 @@ contract NFTLaunchManager is Ownable {
     }
 
     function deployNFT(string memory _name, string memory _ticker) public returns (address) {
-        uint256 amountContractOwned = _getUserContractAmount(msg.sender);
+        uint256 currentAmount = _userContractAmount[msg.sender];
 
         NFTLauncher nftLauncher = new NFTLauncher(
             _name,
             _ticker,
             string.concat(
                 NFT_BASE_URI,
-                amountContractOwned.toString(),
+                "/",
+                (currentAmount + 1).toString(),
                 "/"
             )
         );
 
-        if (_userContracts[msg.sender].length == 0) {
-            _userContracts[msg.sender] = new address[](0);
-        }
-
         _userContracts[msg.sender].push(address(nftLauncher));
-        _userContractAmount[msg.sender] += 1;
+        _userContractAmount[msg.sender] = currentAmount + 1;
         _contractOwner[address(nftLauncher)] = msg.sender;
 
         emit DeployNFT(msg.sender, address(nftLauncher));
