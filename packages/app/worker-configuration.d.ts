@@ -7,6 +7,7 @@ declare namespace Cloudflare {
 		APP_VERSION: "default-vars-version";
 		FAUCET_PRIVATE_KEY: "default-faucet-private-key";
 		GEMINI_API_KEY: "default-gemini-api-key";
+        MANAGER_CONTRACT_ADDRESS: "default-manager-contract-address";
 	}
 }
 interface Env extends Cloudflare.Env {}

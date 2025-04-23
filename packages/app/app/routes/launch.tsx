@@ -18,7 +18,8 @@ export async function loader({ context, request }: Route.LoaderArgs) {
   const nftContracts: Address[] = []; 
   return {
     initialState,
-    nftContracts
+    nftContracts,
+    managerContractAddress: context.cloudflare.env.MANAGER_CONTRACT_ADDRESS,
   };
 }
 
@@ -52,5 +53,6 @@ export default function Launch({ loaderData }: Route.ComponentProps) {
     return <LaunchPage
         initialState={loaderData.initialState as State | undefined}
         nftContracts={loaderData.nftContracts}
+        managerContractAddress={loaderData.managerContractAddress as Address}
     />
 }
