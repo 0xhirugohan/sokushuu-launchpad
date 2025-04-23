@@ -23,7 +23,6 @@ const LaunchPage: React.FC<LandingPageProps> = ({ initialState, nftContracts }) 
     const fetcherText = fetcher.data?.message;
     const fetcherGeneratedType = fetcher.data?.generatedType;
     const fetcherGenerated = fetcher.data?.generated;
-    console.log({ fetcherText });
 
     return <Layout initialState={initialState}>
         {
