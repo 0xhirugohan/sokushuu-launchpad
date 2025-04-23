@@ -70,6 +70,10 @@ contract NFTLaunchManager is Ownable {
         return _tokenSalePrice[contractAddress][tokenId];
     }
 
+    function getUserDeployedContracts(address user) public view returns (address[] memory) {
+        return _userContracts[user];
+    }
+
     function deployNFT(string memory _name, string memory _ticker) public returns (address) {
         uint256 amountContractOwned = _getUserContractAmount(msg.sender);
 

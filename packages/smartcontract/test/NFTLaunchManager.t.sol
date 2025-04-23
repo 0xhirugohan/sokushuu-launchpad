@@ -38,6 +38,8 @@ contract NFTLaunchManagerTest is Test {
         assertEq(nftLauncher.name(), nftName);
         assertEq(nftLauncher.symbol(), nftTicker);
         assertEq(nftLaunchManager.getContractOwner(nftAddress), alice);
+        address[] memory deployedAddresses = nftLaunchManager.getUserDeployedContracts(alice);
+        assertEq(deployedAddresses[0], nftAddress);
     }
 
     function test_mintContractToSelf() public returns (address) {
