@@ -19,8 +19,10 @@ contract NFTLaunchManagerTest is Test {
         vm.deal(bob, 10 ether);
 
         vm.prank(deployer);
+        NFTLauncher nftLauncher = new NFTLauncher();
         nftLaunchManager = new NFTLaunchManager(
-            address(this)
+            address(this),
+            address(nftLauncher)
         );
         vm.stopPrank();
     }
@@ -31,12 +33,13 @@ contract NFTLaunchManagerTest is Test {
 
         vm.startPrank(alice);
         address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker);
+        NFTLauncher nftLauncher = NFTLauncher(nftAddress);
         vm.stopPrank();
 
-        NFTLauncher nftLauncher = NFTLauncher(nftAddress);
 
         assertEq(nftLauncher.name(), nftName);
         assertEq(nftLauncher.symbol(), nftTicker);
+        assertEq(nftLauncher.owner(), address(nftLaunchManager));
         assertEq(nftLaunchManager.getContractOwner(nftAddress), alice);
         address[] memory deployedAddresses = nftLaunchManager.getUserDeployedContracts(alice);
         assertEq(deployedAddresses[0], nftAddress);
