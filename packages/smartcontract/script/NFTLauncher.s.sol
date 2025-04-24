@@ -13,11 +13,7 @@ contract NFTLauncherScript is Script {
         vm.createSelectFork("pharos-devnet");
 
         vm.startBroadcast();
-        nftLauncher = new NFTLauncher(
-            "Test NFT Launch",
-            "TNL",
-            "https://launchpad-dev.sokushuu.de/api/nft/test/"
-        );
+        nftLauncher = new NFTLauncher();
         vm.stopBroadcast();
     }
 }
