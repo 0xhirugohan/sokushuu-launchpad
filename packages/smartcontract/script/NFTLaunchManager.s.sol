@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {Script} from "forge-std/Script.sol";
 import {NFTLaunchManager} from "../src/NFTLaunchManager.sol";
+import {NFTLauncher} from "../src/NFTLauncher.sol";
 
 contract NFTLaunchManagerScript is Script {
     NFTLaunchManager public nftLaunchManager;
@@ -13,8 +14,12 @@ contract NFTLaunchManagerScript is Script {
         vm.createSelectFork("pharos-devnet");
 
         vm.startBroadcast();
+
+        NFTLauncher nftLauncher = new NFTLauncher();
+
         nftLaunchManager = new NFTLaunchManager(
-            address(this)
+            address(this),
+            address(nftLauncher)
         );
         vm.stopBroadcast();
     }

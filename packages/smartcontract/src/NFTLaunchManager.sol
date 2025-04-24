@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC721} from "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 import {NFTLauncher} from "./NFTLauncher.sol";
 
@@ -17,6 +18,7 @@ contract NFTLaunchManager is Ownable {
     event BuyListedToken(address indexed buyer, address indexed contractAddress, uint256 tokenId);
 
     string constant NFT_BASE_URI = "https://launchpad-dev.sokushuu.dev/api/nft/";
+    address public immutable i_nftLauncherImplementation;
 
     // NFT created by an address
     mapping(address owner => address[]) private _userContracts;
@@ -49,7 +51,12 @@ contract NFTLaunchManager is Ownable {
 
     error ErrorNFTLaunchManager__PaymentTransferFailed();
 
-    constructor(address initialOwner) Ownable(initialOwner) {}
+    constructor(
+        address _initialOwner,
+        address _nftLauncherImplementation
+    ) Ownable(_initialOwner) {
+        i_nftLauncherImplementation = _nftLauncherImplementation;
+    }
 
     modifier onlyContractOwner(address contractAddress) {
         if (msg.sender != _contractOwner[contractAddress]) {
@@ -72,25 +79,28 @@ contract NFTLaunchManager is Ownable {
 
     function deployNFT(string memory _name, string memory _ticker) public returns (address) {
         uint256 currentAmount = _userContractAmount[msg.sender];
-
-        NFTLauncher nftLauncher = new NFTLauncher(
-            _name,
-            _ticker,
-            string.concat(
-                NFT_BASE_URI,
-                "/",
-                (currentAmount + 1).toString(),
-                "/"
-            )
+        string memory baseURI = string.concat(
+            NFT_BASE_URI,
+            "/",
+            (currentAmount + 1).toString(),
+            "/"
         );
 
-        _userContracts[msg.sender].push(address(nftLauncher));
+        address cloneAddress = Clones.clone(i_nftLauncherImplementation);
+        NFTLauncher(cloneAddress).initialize(
+            _name,
+            _ticker,
+            baseURI,
+            address(this)
+        );
+
+        _userContracts[msg.sender].push(cloneAddress);
         _userContractAmount[msg.sender] = currentAmount + 1;
-        _contractOwner[address(nftLauncher)] = msg.sender;
+        _contractOwner[cloneAddress] = msg.sender;
 
-        emit DeployNFT(msg.sender, address(nftLauncher));
+        emit DeployNFT(msg.sender, cloneAddress);
 
-        return address(nftLauncher);
+        return cloneAddress;
     }
 
     function mintContractTo(address nftContract, address to) public onlyContractOwner(nftContract) {
