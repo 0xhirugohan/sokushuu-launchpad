@@ -10,28 +10,53 @@ import { walletConfig } from "~/libs/wallet";
 
 interface CreateNFTContractProps {
     managerContractAddress: Address;
+    isUserOwnNFTContract: boolean;
+    userOwnedAmount: number;
+
+    onCancel: () => void;
+    getUserOwnedContracts: () => Promise<readonly Address[]>;
 }
 
-export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({ managerContractAddress }) => {
+export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
+    managerContractAddress,
+    isUserOwnNFTContract,
+    userOwnedAmount,
+
+    onCancel,
+    getUserOwnedContracts,
+}) => {
     const { writeContractAsync } = useWriteContract({ config: walletConfig });
     const [collectionName, setCollectionName] = useState<string>("");
     const [collectionTicker, setCollectionTicker] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
+    const [ownedContractAmount, setOwnedContractAmount] = useState(userOwnedAmount);
 
     const handleDeployContract = async () => {
-        // @todo check it again once the gas is efficient to try
         setIsLoading(true);
-        const hash = await writeContractAsync({
-            abi: nftLaunchManagerAbi,
-            address: managerContractAddress,
-            functionName: 'deployNFT',
-            args: [
-                collectionName,
-                collectionTicker,
-            ],
-        });
-        console.log({ hash });
-        setIsLoading(false);
+        try {
+            await writeContractAsync({
+                abi: nftLaunchManagerAbi,
+                address: managerContractAddress,
+                functionName: 'deployNFT',
+                args: [
+                    collectionName,
+                    collectionTicker,
+                ],
+            });
+
+            let contracts: readonly Address[] = [];
+            while (contracts.length <= ownedContractAmount) {
+                contracts = await getUserOwnedContracts();
+            }
+
+            setOwnedContractAmount(contracts.length);
+
+            setIsLoading(false);
+            onCancel();
+        } catch (err) {
+            setIsLoading(false);
+            console.log({ err });
+        }
     }
 
     const onNameChange = (event: ChangeEvent<HTMLInputElement>) => setCollectionName(event.currentTarget.value);
@@ -39,7 +64,7 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({ managerCon
 
     return <div className="flex flex-col gap-y-8">
         <div className="flex flex-col gap-y-4">
-            <p className="text-xl">You don't have any NFT Collection yet.</p>
+            { !isUserOwnNFTContract && <p className="text-xl">You don't have any NFT Collection yet.</p> }
             <p className="text-xl">Add new?</p>
         </div>
         <div className="flex flex-col gap-y-4">
@@ -69,6 +94,7 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({ managerCon
             >
                 { isLoading ? 'Deploying...' :  'Deploy NFT Collection' }
             </Button>
+            { isUserOwnNFTContract && <Button onClick={onCancel}>Cancel</Button> }
         </div>
     </div>
 }

@@ -31,6 +31,9 @@ contract NFTLaunchManagerTest is Test {
         string memory nftName = "Test NFT Token";
         string memory nftTicker = "TNT";
 
+        address[] memory deployedAddressInitial = nftLaunchManager.getUserDeployedContracts(alice);
+        assertEq(deployedAddressInitial.length, 0);
+
         vm.startPrank(alice);
         address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker);
         NFTLauncher nftLauncher = NFTLauncher(nftAddress);
@@ -43,6 +46,7 @@ contract NFTLaunchManagerTest is Test {
         assertEq(nftLaunchManager.getContractOwner(nftAddress), alice);
         address[] memory deployedAddresses = nftLaunchManager.getUserDeployedContracts(alice);
         assertEq(deployedAddresses[0], nftAddress);
+        assertEq(deployedAddresses.length, 1);
     }
 
     function test_mintContractToSelf() public returns (address) {

@@ -18,14 +18,18 @@ interface WalletLayoutProps {
 }
 
 const WalletLayout: React.FC<WalletLayoutProps> = ({ setAddressProp }) => {
-    const { address } = useAccount({ config: walletConfig });
+    const { address, status } = useAccount({ config: walletConfig });
     const { connectors, connect } = useConnect({ config: walletConfig });
     const { disconnect } = useDisconnect({ config: walletConfig });
     const { switchChain } = useSwitchChain();
-
+    
     useEffect(() => {
-        setAddressProp(address);
-    }, [address])
+        if (status === 'connected') {
+            setAddressProp(address);
+        } else {
+            setAddressProp(undefined);
+        }
+    }, [address, status])
 
     useAccountEffect({
         onConnect(data) {
@@ -57,7 +61,11 @@ const WalletLayout: React.FC<WalletLayoutProps> = ({ setAddressProp }) => {
                 Sokushuu Launchpad
             </NavLink>
             <div className="p-2 flex gap-x-2">
-                {address ? <button
+                {status === 'connecting' || status === 'reconnecting' && <div className="p-2 border-2 border-zinc-600 rounded-md flex gap-x-2">
+                    <span>Loading...</span>
+                    <img src={WalletIcon} />
+                </div>}
+                {address && status === 'connected' && <button
                         onClick={handleLogout}
                         className="p-2 border-2 border-zinc-600 rounded-md flex gap-x-2 cursor-pointer relative group-hover:block"
                     >
@@ -71,11 +79,12 @@ const WalletLayout: React.FC<WalletLayoutProps> = ({ setAddressProp }) => {
                             logout
                         </button>
                         */}
-                    </button> : <button
+                    </button>}
+                {!address && status === 'disconnected' && <button
                         onClick={handleConnect}
                         className="p-2 border-2 border-zinc-600 rounded-md flex gap-x-2 cursor-pointer"
                     >
-                        <span>Connect Wallet</span>
+                        <span>Connect</span>
                         <img src={WalletIcon} />
                     </button>
                 }
