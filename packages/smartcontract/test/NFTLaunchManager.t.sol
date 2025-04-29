@@ -8,6 +8,7 @@ import {NFTLauncher} from "../src/NFTLauncher.sol";
 
 contract NFTLaunchManagerTest is Test {
     NFTLaunchManager public nftLaunchManager;
+    NFTLauncher public nftLauncherImplementation;
 
     address deployer = makeAddr("deployer");
     address alice = makeAddr("alice");
@@ -19,10 +20,10 @@ contract NFTLaunchManagerTest is Test {
         vm.deal(bob, 10 ether);
 
         vm.prank(deployer);
-        NFTLauncher nftLauncher = new NFTLauncher();
+        nftLauncherImplementation = new NFTLauncher();
         nftLaunchManager = new NFTLaunchManager(
             address(this),
-            address(nftLauncher)
+            address(nftLauncherImplementation)
         );
         vm.stopPrank();
     }
@@ -30,12 +31,13 @@ contract NFTLaunchManagerTest is Test {
     function test_deployNFT() public {
         string memory nftName = "Test NFT Token";
         string memory nftTicker = "TNT";
+        bytes32 salt = keccak256(abi.encodePacked("test_deployNFT_salt", alice));
 
         address[] memory deployedAddressInitial = nftLaunchManager.getUserDeployedContracts(alice);
         assertEq(deployedAddressInitial.length, 0);
 
         vm.startPrank(alice);
-        address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker);
+        address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker, salt);
         NFTLauncher nftLauncher = NFTLauncher(nftAddress);
         vm.stopPrank();
 
@@ -52,14 +54,23 @@ contract NFTLaunchManagerTest is Test {
     function test_mintContractToSelf() public returns (address) {
         string memory nftName = "Test NFT Token";
         string memory nftTicker = "TNT";
+        bytes32 salt = keccak256(abi.encodePacked("test_mintContractToSelf_salt", alice));
+        uint256 tokenId = 0;
 
         vm.startPrank(alice);
-        address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker);
+        address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker, salt);
         nftLaunchManager.mintContractTo(nftAddress, alice);
         vm.stopPrank();
 
         assertEq(IERC721(nftAddress).balanceOf(alice), 1);
         assertEq(IERC721(nftAddress).ownerOf(0), alice);
+
+        NFTLauncher nftLauncher = NFTLauncher(nftAddress);
+        string memory baseURI = nftLauncher.baseURI();
+        string memory actualTokenURI = nftLauncher.tokenURI(tokenId);
+        string memory expectedTokenURI = string.concat(baseURI, "0.json");
+
+        assertEq(actualTokenURI, expectedTokenURI);
 
         return nftAddress;
     }
@@ -67,9 +78,10 @@ contract NFTLaunchManagerTest is Test {
     function test_mintContractToOther() public returns (address) {
         string memory nftName = "Test NFT Token";
         string memory nftTicker = "TNT";
+        bytes32 salt = keccak256(abi.encodePacked("test_mintContractToOther_salt", alice));
 
         vm.startPrank(alice);
-        address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker);
+        address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker, salt);
         nftLaunchManager.mintContractTo(nftAddress, bob);
         vm.stopPrank();
 

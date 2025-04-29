@@ -11,6 +11,8 @@ contract NFTLauncher is Initializable, ERC721Upgradeable, OwnableUpgradeable {
 
     string private i_BaseURI;
     uint256 private _tokenId = 0;
+    
+    error ErrorNFTLauncher__TokenIdNonExisting();
 
     constructor() initializer {}
 
@@ -27,6 +29,21 @@ contract NFTLauncher is Initializable, ERC721Upgradeable, OwnableUpgradeable {
 
     function _baseURI() internal view override returns (string memory) {
         return i_BaseURI;
+    }
+
+    function baseURI() public view returns (string memory) {
+        return _baseURI();
+    }
+
+    function tokenURI(uint256 tokenId) public view override returns (string memory) {
+        if (tokenId > _tokenId) revert ErrorNFTLauncher__TokenIdNonExisting();
+
+        string memory base = _baseURI();
+        if (bytes(base).length == 0) {
+            return "";
+        }
+
+        return string(abi.encodePacked(base, tokenId.toString(), ".json"));
     }
 
     function safeMintTo(address to) public onlyOwner {

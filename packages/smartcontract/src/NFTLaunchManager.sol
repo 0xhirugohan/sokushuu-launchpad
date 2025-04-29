@@ -51,6 +51,8 @@ contract NFTLaunchManager is Ownable {
 
     error ErrorNFTLaunchManager__PaymentTransferFailed();
 
+    error ErrorNFTLaunchManager__LaunchPredictionMismatch();
+
     constructor(
         address _initialOwner,
         address _nftLauncherImplementation
@@ -81,16 +83,31 @@ contract NFTLaunchManager is Ownable {
         return _userContracts[user];
     }
 
-    function deployNFT(string memory _name, string memory _ticker) public returns (address) {
+    function deployNFT(
+        string memory _name,
+        string memory _ticker,
+        bytes32 _salt
+    ) public returns (address) {
         uint256 currentAmount = _userContractAmount[msg.sender];
+
+        address predictedAddress = Clones.predictDeterministicAddress(
+            i_nftLauncherImplementation,
+            _salt,
+            address(this)
+        );
+
         string memory baseURI = string.concat(
             NFT_BASE_URI,
-            "/",
-            (currentAmount + 1).toString(),
+            Strings.toHexString(uint160(uint256(uint160(predictedAddress))), 20),
             "/"
         );
 
-        address cloneAddress = Clones.clone(i_nftLauncherImplementation);
+        address cloneAddress = Clones.cloneDeterministic(i_nftLauncherImplementation, _salt);
+
+        if (cloneAddress != predictedAddress) {
+            revert ErrorNFTLaunchManager__LaunchPredictionMismatch();
+        }
+
         NFTLauncher(cloneAddress).initialize(
             _name,
             _ticker,
