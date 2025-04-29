@@ -64,6 +64,11 @@ export const nftLaunchManagerAbi = [
         "name": "_ticker",
         "type": "string",
         "internalType": "string"
+      },
+      {
+        "name": "_salt",
+        "type": "bytes32",
+        "internalType": "bytes32"
       }
     ],
     "outputs": [
@@ -397,6 +402,11 @@ export const nftLaunchManagerAbi = [
   },
   {
     "type": "error",
+    "name": "ErrorNFTLaunchManager__LaunchPredictionMismatch",
+    "inputs": []
+  },
+  {
+    "type": "error",
     "name": "ErrorNFTLaunchManager__NFTContractIsNotRegistered",
     "inputs": []
   },
@@ -481,6 +491,22 @@ export const nftLaunchManagerAbi = [
         "name": "account",
         "type": "address",
         "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StringsInsufficientHexLength",
+    "inputs": [
+      {
+        "name": "value",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "length",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ]
   }

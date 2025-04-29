@@ -1,8 +1,9 @@
 import type React from "react";
 import type { ChangeEvent } from "react";
 import { useState } from "react";
-import { useWriteContract } from "wagmi";
-import type { Address } from "viem";
+import { useAccount, useWriteContract } from "wagmi";
+import type { Address, Hex } from "viem";
+import { keccak256, encodePacked } from "viem";
 
 import { Button } from "~/components/button";
 import { nftLaunchManagerAbi } from "~/abi/nftLaunchManager";
@@ -26,14 +27,24 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
     getUserOwnedContracts,
 }) => {
     const { writeContractAsync } = useWriteContract({ config: walletConfig });
+    const account = useAccount();
     const [collectionName, setCollectionName] = useState<string>("");
     const [collectionTicker, setCollectionTicker] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
-    const [ownedContractAmount, setOwnedContractAmount] = useState(userOwnedAmount);
 
     const handleDeployContract = async () => {
+        if (!account.address) {
+            return;
+        }
+
         setIsLoading(true);
         try {
+            const packed = encodePacked(
+                ['address', 'string', 'string'],
+                [account.address, collectionName, collectionTicker]
+            );
+            const salt: Hex = keccak256(packed);
+
             await writeContractAsync({
                 abi: nftLaunchManagerAbi,
                 address: managerContractAddress,
@@ -41,17 +52,13 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
                 args: [
                     collectionName,
                     collectionTicker,
+                    salt,
                 ],
             });
 
-            let contracts: readonly Address[] = [];
-            while (contracts.length <= ownedContractAmount) {
-                contracts = await getUserOwnedContracts();
-            }
-
-            setOwnedContractAmount(contracts.length);
-
             setIsLoading(false);
+            setCollectionName("");
+            setCollectionTicker("");
             onCancel();
         } catch (err) {
             setIsLoading(false);
@@ -61,6 +68,8 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
 
     const onNameChange = (event: ChangeEvent<HTMLInputElement>) => setCollectionName(event.currentTarget.value);
     const onTickerChange = (event: ChangeEvent<HTMLInputElement>) => setCollectionTicker(event.currentTarget.value.toUpperCase());
+
+    const isDeployDisabled = collectionName === "" || collectionTicker === "" || isLoading || !account.address;
 
     return <div className="flex flex-col gap-y-8">
         <div className="flex flex-col gap-y-4">
@@ -90,7 +99,7 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
             />
             <Button
                 onClick={handleDeployContract}
-                disabled={collectionName === "" || collectionTicker === "" || isLoading}
+                disabled={isDeployDisabled}
             >
                 { isLoading ? 'Deploying...' :  'Deploy NFT Collection' }
             </Button>

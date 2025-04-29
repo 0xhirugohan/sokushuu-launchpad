@@ -3,6 +3,7 @@ import type React from "react";
 interface ButtonProps {
     children: React.ReactNode;
     className?: string;
+    type?: 'submit' | 'reset' | 'button';
     disabled?: boolean;
 
     onClick?: () => void;

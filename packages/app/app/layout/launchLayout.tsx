@@ -69,6 +69,8 @@ const LaunchLayout: React.FC<LaunchLayoutProps> = ({ initialState, nftContracts,
         onCancel={switchToPrompt}
     />;
     else if (userOwnedContractsStatus === 'success' && userOwnedContracts && userOwnedContracts.length > 0) return <PromptImageLayout
+        userAddress={address ?? '0x'}
+        managerContractAddress={managerContractAddress}
         ownedNftContracts={userOwnedContracts}
         onAddContract={switchToContract}
     />

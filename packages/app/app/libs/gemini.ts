@@ -42,7 +42,14 @@ interface GenerateImageArgs {
 const generateImage = async ({ prompt, geminiApiKey }: GenerateImageArgs) => {
     try {
         const requestBody = {
-            contents: [{ parts: [{ text: prompt }] }],
+            contents: [
+                {
+                    parts: [
+                        { text: "You are an expert in traditional art and digital drawing. You can make an image from anything. Your task is making an image that follow strongly to description that sent by user. You can only response by image, not text. Do not attach any text in the image." },
+                        { text: prompt }
+                    ]
+                }
+            ],
             generationConfig: {
                 responseModalities: ["TEXT", "IMAGE"]
             }
@@ -86,6 +93,7 @@ const generateImage = async ({ prompt, geminiApiKey }: GenerateImageArgs) => {
             generatedType: promptImageResponses.length > 0 ? 'IMAGE' : 'TEXT',
         };
     } catch (err) {
+        console.log({ err });
         throw err;
     }  
 }

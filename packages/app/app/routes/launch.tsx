@@ -42,6 +42,7 @@ export async function action({ context, request }: Route.ActionArgs) {
         text,
     };
   } catch (error) {
+    console.log({ error });
     return {
       ok: false,
       error: "An unexpected error occurred."

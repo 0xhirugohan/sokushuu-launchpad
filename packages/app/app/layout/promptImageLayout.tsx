@@ -1,13 +1,17 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
-import { useReadContracts } from "wagmi";
+import { useReadContracts, useWriteContract } from "wagmi";
 import type { Address } from "viem";
 
 import { Button } from "~/components/button";
 import { nftLauncherAbi } from "~/abi/nftLauncher";
+import { nftLaunchManagerAbi } from "~/abi/nftLaunchManager";
+import { walletConfig } from "~/libs/wallet";
 
 interface PromptImageLayoutProps {
+    userAddress: Address;
+    managerContractAddress: Address;
     ownedNftContracts: readonly Address[];
 
     onAddContract: () => void;
@@ -18,10 +22,12 @@ interface NFTCollectionContract {
     name: string;
 }
 
-const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({ownedNftContracts, onAddContract}) => {
+const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, managerContractAddress, ownedNftContracts, onAddContract}) => {
     const fetcher = useFetcher();
+    const { writeContractAsync } = useWriteContract({ config: walletConfig });
     const [nftCollections, setNFTCollections] = useState<NFTCollectionContract[]>();
     const [isFetchingNFTs, setIsFetchingNFTs] = useState<boolean>(false);
+    const [selectedNftCollection, setSelectedNftCollection] = useState<Address>();
     const { refetch } = useReadContracts({
         contracts: ownedNftContracts.map(contract => {
             return {
@@ -49,8 +55,29 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({ownedNftContracts,
                 };
             }) ?? [];
             setNFTCollections(scopedNftCollections);
+            setSelectedNftCollection(scopedNftCollections[0].address);
             setIsFetchingNFTs(false);
         }
+    }
+
+    const mintNFT = async () => {
+        if (!selectedNftCollection) return;
+        if (!fetcher.data?.generated) return;
+
+        const hash = await writeContractAsync({
+            abi: nftLaunchManagerAbi,
+            address: managerContractAddress,
+            functionName: 'mintContractTo',
+            args: [
+                selectedNftCollection,
+                userAddress,
+            ],
+        });
+        console.log({ hash });
+    }
+
+    const onNFTContractSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setSelectedNftCollection(e.target.value as Address);
     }
 
     useEffect(() => {
@@ -69,10 +96,16 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({ownedNftContracts,
             <div className="flex flex-col gap-y-2">
                 <p>Select which NFT Collection: </p>
                 <div className="flex gap-x-2">
-                    <select className="flex-1 p-2 border-2 border-zinc-600 rounded-md">
+                    <select
+                        onChange={onNFTContractSelectChange}
+                        className="flex-1 p-2 border-2 border-zinc-600 rounded-md"
+                    >
                         {
                             nftCollections?.map((contract) => {
-                                return <option value={contract.address}>
+                                return <option
+                                    key={contract.address}
+                                    value={contract.address}
+                                >
                                     {contract.name}
                                 </option>
                             })
@@ -102,9 +135,14 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({ownedNftContracts,
                 placeholder="Describe what kind of image do you want to put in the NFT"
                 disabled={fetcher.state !== "idle"}
             />
-            <Button disabled={fetcher.state !== "idle"}>
-                {fetcher.state !== "idle" ? "Generating" : "Generate"}
+            <Button type="submit" disabled={fetcher.state !== "idle"}>
+                {fetcher.state !== "idle" ? "Generating..." : "Generate"}
             </Button>
+            { fetcherGeneratedType === "IMAGE" && fetcher.state === "idle" && <Button
+                type="button"
+                disabled={!selectedNftCollection}
+                onClick={mintNFT}
+            >Mint</Button> }
         </fetcher.Form>
     </div>
 }

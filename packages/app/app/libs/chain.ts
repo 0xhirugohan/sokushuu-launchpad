@@ -5,8 +5,8 @@ const pharosDevnet = defineChain({
     name: 'PharosDevnet',
     nativeCurrency: {
         decimals: 18,
-        name: 'Ether',
-        symbol: 'ETH',
+        name: 'Pharos Test Token',
+        symbol: 'PTT',
     },
     rpcUrls: {
         default: {
@@ -22,4 +22,19 @@ const pharosDevnet = defineChain({
     },
 });
 
-export { pharosDevnet };
+const localChain = defineChain({
+    id: 31337,
+    name: 'LocalChain',
+    nativeCurrency: {
+        decimals: 18,
+        name: 'Ether',
+        symbol: 'ETH',
+    },
+    rpcUrls: {
+        default: {
+            http: ['http://127.0.0.1:8545'],
+        },
+    },
+});
+
+export { pharosDevnet, localChain };
