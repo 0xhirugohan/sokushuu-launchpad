@@ -13,7 +13,13 @@
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare default",
 		"APP_VERSION": "default-vars-version",
-		"FAUCET_PRIVATE_KEY": "default-faucet-private-key"
+		"FAUCET_PRIVATE_KEY": "default-faucet-private-key",
+		"GEMINI_API_KEY": "default-gemini-api-key",
+		"MANAGER_CONTRACT_ADDRESS": "default-manager-contract-address",
+		"R2_BUCKET_URL": "default-r2-bucket-url",
+		"R2_ACCESS_KEY": "default-r2-access-key",
+		"R2_SECRET_KEY": "default-r2-secret-key",
+		"R2_ENDPOINT": "default-r2-endpoint"
 	},
 	"observability": {
 		"enabled": true
@@ -34,6 +40,12 @@
 		{
 			"binding": "SOKUSHUU_LAUNCHPAD_DEV",
 			"id": "c971fa43207b4c5ba22f8f30a940822d"
+		}
+	],
+	"r2_buckets": [
+		{
+			"bucket_name": "sokushuu-launchpad-dev-r2",
+      		"binding": "sokushuu_launchpad_dev_r2"
 		}
 	]
 

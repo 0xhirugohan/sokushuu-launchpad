@@ -7,6 +7,7 @@ import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 
 import {NFTLauncher} from "./NFTLauncher.sol";
+import {INFTLauncher} from "./interfaces/INFTLauncher.sol";
 
 contract NFTLaunchManager is Ownable {
     using Strings for uint256;
@@ -51,6 +52,10 @@ contract NFTLaunchManager is Ownable {
 
     error ErrorNFTLaunchManager__PaymentTransferFailed();
 
+    error ErrorNFTLaunchManager__LaunchPredictionMismatch();
+
+    error ErrorNFTLaunchManager__TokenIdAlreadyMinted();
+
     constructor(
         address _initialOwner,
         address _nftLauncherImplementation
@@ -77,16 +82,39 @@ contract NFTLaunchManager is Ownable {
         return _tokenSalePrice[contractAddress][tokenId];
     }
 
-    function deployNFT(string memory _name, string memory _ticker) public returns (address) {
+    function getUserDeployedContracts(address user) public view returns (address[] memory) {
+        return _userContracts[user];
+    }
+
+    function getContractCurrentTokenId(address contractAddress) public view returns (uint256) {
+        return INFTLauncher(contractAddress).getCurrentTokenId();
+    }
+
+    function deployNFT(
+        string memory _name,
+        string memory _ticker,
+        bytes32 _salt
+    ) public returns (address) {
         uint256 currentAmount = _userContractAmount[msg.sender];
+
+        address predictedAddress = Clones.predictDeterministicAddress(
+            i_nftLauncherImplementation,
+            _salt,
+            address(this)
+        );
+
         string memory baseURI = string.concat(
             NFT_BASE_URI,
-            "/",
-            (currentAmount + 1).toString(),
+            Strings.toHexString(uint160(uint256(uint160(predictedAddress))), 20),
             "/"
         );
 
-        address cloneAddress = Clones.clone(i_nftLauncherImplementation);
+        address cloneAddress = Clones.cloneDeterministic(i_nftLauncherImplementation, _salt);
+
+        if (cloneAddress != predictedAddress) {
+            revert ErrorNFTLaunchManager__LaunchPredictionMismatch();
+        }
+
         NFTLauncher(cloneAddress).initialize(
             _name,
             _ticker,
@@ -103,15 +131,24 @@ contract NFTLaunchManager is Ownable {
         return cloneAddress;
     }
 
-    function mintContractTo(address nftContract, address to) public onlyContractOwner(nftContract) {
-        if (to == address(0) || nftContract == address(0)) {
+    function mintContractTo(
+        address _nftContract,
+        address _to,
+        uint256 _tokenId
+    ) public onlyContractOwner(_nftContract) {
+        if (_to == address(0) || _nftContract == address(0)) {
             revert ErrorNFTLaunchManager__AddressIsZero();
         }
 
-        NFTLauncher nftLauncher = NFTLauncher(nftContract);
-        nftLauncher.safeMintTo(to);
+        uint256 contractTokenId = INFTLauncher(_nftContract).getCurrentTokenId();
+        if (_tokenId != contractTokenId) {
+            revert ErrorNFTLaunchManager__TokenIdAlreadyMinted();
+        }
 
-        emit MintNFT(address(nftLauncher), msg.sender, to);
+        NFTLauncher nftLauncher = NFTLauncher(_nftContract);
+        nftLauncher.safeMintTo(_to);
+
+        emit MintNFT(address(nftLauncher), msg.sender, _to);
     }
 
     function listTokenToSell(address nftContract, uint256 tokenId, uint256 priceInEther) public {
