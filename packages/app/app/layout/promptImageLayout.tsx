@@ -60,9 +60,15 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
         }
     }
 
+    const fetcherGeneratedType = fetcher.data?.generatedType;
+    const fetcherGenerated = fetcher.data?.generated;
+
     const mintNFT = async () => {
         if (!selectedNftCollection) return;
         if (!fetcher.data?.generated) return;
+
+        // @todo read tokenId from contract
+        const tokenId = "1";
 
         const hash = await writeContractAsync({
             abi: nftLaunchManagerAbi,
@@ -74,6 +80,30 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
             ],
         });
         console.log({ hash });
+
+        const formData = new FormData();
+        formData.append(
+            "image",
+            fetcherGenerated[0].data,
+        );
+        formData.append(
+            "image_mimetype",
+            fetcherGenerated[0].mimeType,
+        );
+        formData.append(
+            "image_data",
+            fetcherGenerated[0].data,
+        );
+        formData.append(
+            "nft_contract_address",
+            selectedNftCollection,
+        );
+        formData.append(
+            "nft_token_id",
+            tokenId,
+        );
+        formData.append("hash", hash);
+        await fetcher.submit(formData, { method: "post" });
     }
 
     const onNFTContractSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -85,9 +115,6 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
             getNFTContractDetails();
         }
     }, [ownedNftContracts]);
-
-    const fetcherGeneratedType = fetcher.data?.generatedType;
-    const fetcherGenerated = fetcher.data?.generated;
 
     if (isFetchingNFTs) return <div>Loading...</div>;
 

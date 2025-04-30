@@ -5,6 +5,7 @@ export default [
         index("routes/home.tsx"),
         route("faucet", "routes/faucet.tsx"),
         route("chain", "routes/chain.tsx"),
-        route("launch", "routes/launch.tsx")
+        route("launch", "routes/launch.tsx"),
+        route("api/nft/:smartContractAddress/:tokenId", "routes/api.tsx")
     ])
 ] satisfies RouteConfig;

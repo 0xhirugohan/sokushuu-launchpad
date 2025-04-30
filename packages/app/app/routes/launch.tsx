@@ -1,5 +1,6 @@
 import { type State } from "wagmi";
 import type { Address } from "viem";
+import { AwsClient } from "aws4fetch";
 
 import type { Route } from "./+types/launch";
 import { getWalletStateFromCookie } from "~/libs/cookie";
@@ -27,20 +28,78 @@ export async function action({ context, request }: Route.ActionArgs) {
   const geminiApiKey = context.cloudflare.env.GEMINI_API_KEY;
   const formData = await request.formData();
   const text = formData.get("text") as string;
+  const txHash = formData.get("hash") as string;
+
+  console.log({ txHash });
 
   try {
-    const { generated, generatedType } = await generateImage({
-      prompt: text,
-      geminiApiKey,
-    });
+    if (txHash && txHash !== "") {
+      const image = formData.get("image") as string;
+      const imageMimetype = formData.get("image_mimetype") as string;
+      const imageData = formData.get("image_data");
+      const nftContractAddress = formData.get("nft_contract_address");
+      const nftTokenId = formData.get("nft_token_id");
 
-    return {
+      if (!nftTokenId) {
+        return {
+          ok: false,
+          error: "Token ID should not be empty or Token ID not found",
+        }
+      }
+
+      const client = new AwsClient({
+        service: "s3",
+        region: "auto",
+        accessKeyId: context.cloudflare.env.R2_ACCESS_KEY,
+        secretAccessKey: context.cloudflare.env.R2_SECRET_KEY,
+      });
+
+      const key = `${nftContractAddress}/${nftTokenId}.png`;
+      const signedUrl = await client.sign(
+        new Request(`${context.cloudflare.env.R2_ENDPOINT}/sokushuu-launchpad-dev-r2/images/${key}?X-Amz-Expires=${3600}`, {
+          method: 'PUT',
+        }),
+        {
+          aws: {
+            signQuery: true,
+            service: "s3",
+            accessKeyId: context.cloudflare.env.R2_ACCESS_KEY,
+            secretAccessKey: context.cloudflare.env.R2_SECRET_KEY,
+          },
+        },
+      )
+
+      const signedUrlString = signedUrl.url.toString();
+      const imageBuffer = Buffer.from(image, "base64");
+      await fetch(signedUrlString, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': imageMimetype ?? 'multipart/form-data',
+        },
+        body: imageBuffer,
+      });
+
+      return {
         ok: true,
-        message: "Image generated successfully!",
-        generated,
-        generatedType,
+        message: "Image uploaded successfully!",
+        generated: [{ data: imageData, mimeType: imageMimetype }],
+        generatedType: "IMAGE",
         text,
-    };
+      };
+    } else {
+      const { generated, generatedType } = await generateImage({
+        prompt: text,
+        geminiApiKey,
+      });
+
+      return {
+          ok: true,
+          message: "Image generated successfully!",
+          generated,
+          generatedType,
+          text,
+      };
+    }
   } catch (error) {
     console.log({ error });
     return {
