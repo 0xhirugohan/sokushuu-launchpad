@@ -55,7 +55,7 @@ const ViewPageContent: React.FC<ViewPageProps> = ({
     useEffect(() => {
         const readContract = async () => {
             const { data: tokenURI } = await refetch();
-            // const url = new URL((tokenURI as string).replace('https://launchpad-dev.sokushuu.dev', 'http://localhost:5173'));
+            // const url = new URL((tokenURI as string).replace('https://launchpad-dev.sokushuu.de', 'http://localhost:5173'));
             const url = new URL(tokenURI as string);
             const result = await fetch(url, {
                 method: 'GET',

@@ -18,7 +18,7 @@ contract NFTLaunchManager is Ownable {
     event CancelListing(address indexed contractAddress, uint256 indexed tokenId);
     event BuyListedToken(address indexed buyer, address indexed contractAddress, uint256 tokenId);
 
-    string constant NFT_BASE_URI = "https://launchpad-dev.sokushuu.dev/api/nft/";
+    string constant NFT_BASE_URI = "https://launchpad-dev.sokushuu.de/api/nft/";
     address public immutable i_nftLauncherImplementation;
 
     // NFT created by an address
