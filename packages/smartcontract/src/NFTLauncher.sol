@@ -47,7 +47,7 @@ contract NFTLauncher is Initializable, ERC721Upgradeable, OwnableUpgradeable {
             return "";
         }
 
-        return string(abi.encodePacked(base, tokenId.toString(), ".json"));
+        return string(abi.encodePacked(base, tokenId.toString()));
     }
 
     function safeMintTo(address to) public onlyOwner {

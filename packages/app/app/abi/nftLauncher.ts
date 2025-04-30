@@ -75,6 +75,19 @@ export const nftLauncherAbi = [
   },
   {
     "type": "function",
+    "name": "getCurrentTokenId",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "initialize",
     "inputs": [
       {

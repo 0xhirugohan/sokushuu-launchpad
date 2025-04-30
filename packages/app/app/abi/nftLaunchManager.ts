@@ -82,6 +82,25 @@ export const nftLaunchManagerAbi = [
   },
   {
     "type": "function",
+    "name": "getContractCurrentTokenId",
+    "inputs": [
+      {
+        "name": "contractAddress",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "getContractOwner",
     "inputs": [
       {
@@ -207,14 +226,19 @@ export const nftLaunchManagerAbi = [
     "name": "mintContractTo",
     "inputs": [
       {
-        "name": "nftContract",
+        "name": "_nftContract",
         "type": "address",
         "internalType": "address"
       },
       {
-        "name": "to",
+        "name": "_to",
         "type": "address",
         "internalType": "address"
+      },
+      {
+        "name": "_tokenId",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "outputs": [],
@@ -418,6 +442,11 @@ export const nftLaunchManagerAbi = [
   {
     "type": "error",
     "name": "ErrorNFTLaunchManager__PriceIsZero",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "ErrorNFTLaunchManager__TokenIdAlreadyMinted",
     "inputs": []
   },
   {

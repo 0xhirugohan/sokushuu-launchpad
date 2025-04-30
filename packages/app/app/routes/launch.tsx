@@ -85,6 +85,7 @@ export async function action({ context, request }: Route.ActionArgs) {
         generated: [{ data: imageData, mimeType: imageMimetype }],
         generatedType: "IMAGE",
         text,
+        minted: true,
       };
     } else {
       const { generated, generatedType } = await generateImage({

@@ -1,7 +1,7 @@
 import type React from "react";
 import { useEffect, useState } from "react";
 import { useFetcher } from "react-router";
-import { useReadContracts, useWriteContract } from "wagmi";
+import { useReadContract, useReadContracts, useWriteContract } from "wagmi";
 import type { Address } from "viem";
 
 import { Button } from "~/components/button";
@@ -37,6 +37,14 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
             };
         })
     })
+    const { refetch: refetchTokenId } = useReadContract({
+        address: managerContractAddress,
+        abi: nftLaunchManagerAbi,
+        functionName: 'getContractCurrentTokenId',
+        args: [
+            selectedNftCollection ?? '0x',
+        ]
+    });
 
     // get NFT details
     const getNFTContractDetails = async () => {
@@ -50,8 +58,8 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
         if (!isFetching) {
             const scopedNftCollections: NFTCollectionContract[] = data?.map((row, index) => {
                 return {
-                    address: ownedNftContracts[index],
-                    name: row.result ?? '',
+                    address: ownedNftContracts[index] ?? '0x',
+                    name: row.result as string ?? '',
                 };
             }) ?? [];
             setNFTCollections(scopedNftCollections);
@@ -62,13 +70,15 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
 
     const fetcherGeneratedType = fetcher.data?.generatedType;
     const fetcherGenerated = fetcher.data?.generated;
+    const fetcherIsMinted: boolean = fetcher.data?.minted ?? false;
 
     const mintNFT = async () => {
         if (!selectedNftCollection) return;
         if (!fetcher.data?.generated) return;
 
         // @todo read tokenId from contract
-        const tokenId = "1";
+        const readTokenId = await refetchTokenId();
+        const tokenId: bigint = readTokenId.data ?? BigInt(0);
 
         const hash = await writeContractAsync({
             abi: nftLaunchManagerAbi,
@@ -77,6 +87,7 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
             args: [
                 selectedNftCollection,
                 userAddress,
+                tokenId,
             ],
         });
         console.log({ hash });
@@ -100,7 +111,7 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
         );
         formData.append(
             "nft_token_id",
-            tokenId,
+            tokenId.toString(),
         );
         formData.append("hash", hash);
         await fetcher.submit(formData, { method: "post" });
@@ -167,9 +178,11 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
             </Button>
             { fetcherGeneratedType === "IMAGE" && fetcher.state === "idle" && <Button
                 type="button"
-                disabled={!selectedNftCollection}
+                disabled={!selectedNftCollection || fetcherIsMinted}
                 onClick={mintNFT}
-            >Mint</Button> }
+            >
+                {fetcherIsMinted ? 'Minted' : 'Mint'}
+            </Button> }
         </fetcher.Form>
     </div>
 }
