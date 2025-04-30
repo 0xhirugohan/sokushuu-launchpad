@@ -76,7 +76,6 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
         if (!selectedNftCollection) return;
         if (!fetcher.data?.generated) return;
 
-        // @todo read tokenId from contract
         const readTokenId = await refetchTokenId();
         const tokenId: BigInt = readTokenId.data ?? BigInt(0);
 
