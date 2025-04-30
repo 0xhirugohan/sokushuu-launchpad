@@ -78,7 +78,7 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
 
         // @todo read tokenId from contract
         const readTokenId = await refetchTokenId();
-        const tokenId: bigint = readTokenId.data ?? BigInt(0);
+        const tokenId: BigInt = readTokenId.data ?? BigInt(0);
 
         const hash = await writeContractAsync({
             abi: nftLaunchManagerAbi,
@@ -87,8 +87,9 @@ const PromptImageLayout: React.FC<PromptImageLayoutProps> = ({userAddress, manag
             args: [
                 selectedNftCollection,
                 userAddress,
-                tokenId,
+                tokenId as bigint,
             ],
+            gas: BigInt(200000),
         });
         console.log({ hash });
 

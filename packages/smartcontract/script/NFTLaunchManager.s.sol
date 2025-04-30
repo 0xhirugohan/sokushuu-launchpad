@@ -11,8 +11,6 @@ contract NFTLaunchManagerScript is Script {
     function setUp() public {}
 
     function run() public {
-        vm.createSelectFork("pharos-devnet");
-
         vm.startBroadcast();
 
         NFTLauncher nftLauncher = new NFTLauncher();
