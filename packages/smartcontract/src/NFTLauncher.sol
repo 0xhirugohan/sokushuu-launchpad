@@ -35,6 +35,10 @@ contract NFTLauncher is Initializable, ERC721Upgradeable, OwnableUpgradeable {
         return _baseURI();
     }
 
+    function getCurrentTokenId() public view returns (uint256) {
+        return _tokenId;
+    }
+
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if (tokenId > _tokenId) revert ErrorNFTLauncher__TokenIdNonExisting();
 

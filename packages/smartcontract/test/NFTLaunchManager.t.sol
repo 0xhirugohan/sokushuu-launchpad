@@ -59,8 +59,17 @@ contract NFTLaunchManagerTest is Test {
 
         vm.startPrank(alice);
         address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker, salt);
-        nftLaunchManager.mintContractTo(nftAddress, alice);
         vm.stopPrank();
+
+        uint256 contractTokenId = nftLaunchManager.getContractCurrentTokenId(nftAddress);
+        assertEq(contractTokenId, 0);
+
+        vm.startPrank(alice);
+        nftLaunchManager.mintContractTo(nftAddress, alice, contractTokenId);
+        vm.stopPrank();
+
+        uint256 contractTokenIdAfterMint = nftLaunchManager.getContractCurrentTokenId(nftAddress);
+        assertEq(contractTokenIdAfterMint, 1);
 
         assertEq(IERC721(nftAddress).balanceOf(alice), 1);
         assertEq(IERC721(nftAddress).ownerOf(0), alice);
@@ -82,7 +91,8 @@ contract NFTLaunchManagerTest is Test {
 
         vm.startPrank(alice);
         address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker, salt);
-        nftLaunchManager.mintContractTo(nftAddress, bob);
+        uint256 contractTokenId = nftLaunchManager.getContractCurrentTokenId(nftAddress);
+        nftLaunchManager.mintContractTo(nftAddress, bob, contractTokenId);
         vm.stopPrank();
 
         assertEq(IERC721(nftAddress).balanceOf(alice), 0);
@@ -133,5 +143,20 @@ contract NFTLaunchManagerTest is Test {
         assertEq(bob.balance, bobBalance + tokenPrice);
         assertEq(nftLaunchManager.getTokenSalePrice(nftAddress, tokenId), 0);
         assertEq(nftLaunchManager.isTokenOnSale(nftAddress, tokenId), false);
+    }
+
+    function test_mintTo_shouldFailIfTokenIdAlreadyMinted() public {
+        string memory nftName = "Test NFT Token";
+        string memory nftTicker = "TNT";
+        bytes32 salt = keccak256(abi.encodePacked("test_mintContractToSelf_salt", alice));
+
+        vm.startPrank(alice);
+        address nftAddress = nftLaunchManager.deployNFT(nftName, nftTicker, salt);
+        uint256 contractTokenId = nftLaunchManager.getContractCurrentTokenId(nftAddress);
+        nftLaunchManager.mintContractTo(nftAddress, alice, contractTokenId);
+
+        vm.expectRevert();
+        nftLaunchManager.mintContractTo(nftAddress, alice, contractTokenId);
+        vm.stopPrank();
     }
 }
