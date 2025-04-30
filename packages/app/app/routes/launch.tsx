@@ -1,6 +1,7 @@
 import { type State } from "wagmi";
 import type { Address } from "viem";
 import { AwsClient } from "aws4fetch";
+import { redirect } from "react-router";
 
 import type { Route } from "./+types/launch";
 import { getWalletStateFromCookie } from "~/libs/cookie";
@@ -54,7 +55,7 @@ export async function action({ context, request }: Route.ActionArgs) {
         secretAccessKey: context.cloudflare.env.R2_SECRET_KEY,
       });
 
-      const key = `${nftContractAddress}/${nftTokenId}.png`;
+      const key = `${nftContractAddress?.toString().toLocaleLowerCase()}/${nftTokenId}.png`;
       const signedUrl = await client.sign(
         new Request(`${context.cloudflare.env.R2_ENDPOINT}/sokushuu-launchpad-dev-r2/images/${key}?X-Amz-Expires=${3600}`, {
           method: 'PUT',
@@ -79,14 +80,7 @@ export async function action({ context, request }: Route.ActionArgs) {
         body: imageBuffer,
       });
 
-      return {
-        ok: true,
-        message: "Image uploaded successfully!",
-        generated: [{ data: imageData, mimeType: imageMimetype }],
-        generatedType: "IMAGE",
-        text,
-        minted: true,
-      };
+      return redirect(`/view/${nftContractAddress}/${nftTokenId}`);
     } else {
       const { generated, generatedType } = await generateImage({
         prompt: text,

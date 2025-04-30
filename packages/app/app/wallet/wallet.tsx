@@ -3,30 +3,17 @@
 import { useEffect, useState } from "react";
 import { createPublicClient, http, formatEther } from "viem";
 
-import type { Address, EIP1193Provider } from "viem";
+import type { Address } from "viem";
 
 import { walletClient } from './client.client';
 import { pharosDevnet } from "../libs/chain";
 
 import WalletIcon from "../icons/wallet.svg";
 
-declare global {
-    interface Window {
-        ethereum: EIP1193Provider;
-    }
-}
-
 const publicClient = createPublicClient({
     chain: pharosDevnet,
     transport: http(),
 })
-
-/*
-const walletClient = createWalletClient({
-    chain: pharosDevnet,
-    transport: custom(window.ethereum!),
-})
-*/
 
 interface AccountWithBalance {
     address: Address;
