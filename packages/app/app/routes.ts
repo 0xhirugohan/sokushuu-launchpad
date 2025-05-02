@@ -7,6 +7,7 @@ export default [
         route("chain", "routes/chain.tsx"),
         route("launch", "routes/launch.tsx"),
         route("view/:smartContractAddress/:tokenId", "routes/view.tsx"),
-        route("api/nft/:smartContractAddress/:tokenId", "routes/api.tsx")
+        route("api/nft/:smartContractAddress/:tokenId", "routes/api.tsx"),
+        route("api/rpc", "routes/api/rpc.tsx")
     ])
 ] satisfies RouteConfig;

@@ -11,12 +11,14 @@ interface ViewPageProps {
     initialState: State | undefined;
     smartContractAddress: Address;
     tokenId: BigInt;
+    baseURI: string;
 }
 
 const ViewPage: React.FC<ViewPageProps> = ({
     initialState,
     smartContractAddress,
     tokenId,
+    baseURI,
 }) => {
     return (
         <Layout initialState={initialState}>
@@ -24,6 +26,7 @@ const ViewPage: React.FC<ViewPageProps> = ({
                 initialState={initialState}
                 smartContractAddress={smartContractAddress}
                 tokenId={tokenId}
+                baseURI={baseURI}
             />
         </Layout>
     );
@@ -32,6 +35,7 @@ const ViewPage: React.FC<ViewPageProps> = ({
 const ViewPageContent: React.FC<ViewPageProps> = ({
     smartContractAddress,
     tokenId,
+    baseURI,
 }) => {
     const { refetch } = useReadContract({
         address: smartContractAddress,
@@ -55,8 +59,10 @@ const ViewPageContent: React.FC<ViewPageProps> = ({
     useEffect(() => {
         const readContract = async () => {
             const { data: tokenURI } = await refetch();
-            // const url = new URL((tokenURI as string).replace('https://launchpad-dev.sokushuu.de', 'http://localhost:5173'));
-            const url = new URL(tokenURI as string);
+            let url = new URL(tokenURI as string);
+            if (baseURI !== 'https://launchpad-dev.sokushuu.de') {
+                url = new URL((tokenURI as string).replace('https://launchpad-dev.sokushuu.de', 'http://localhost:5173'));
+            }
             const result = await fetch(url, {
                 method: 'GET',
                 headers: {

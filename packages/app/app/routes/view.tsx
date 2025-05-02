@@ -12,17 +12,19 @@ export function meta({}: Route.MetaArgs) {
     ];
 }
 
-export async function loader({ request, params }: Route.LoaderArgs) {
+export async function loader({ request, context, params }: Route.LoaderArgs) {
     const initialState = await getWalletStateFromCookie({ request });
     const smartContractAddress = params.smartContractAddress;
     const tokenId = params.tokenId;
-    return { initialState, smartContractAddress, tokenId };
+    const baseURI = context.cloudflare.env.APP_BASE_URI;
+    return { initialState, smartContractAddress, tokenId, baseURI };
 }
 
 export default function View({
     loaderData,
 }: Route.ComponentProps) {
     return <ViewPage
+        baseURI={loaderData.baseURI}
         initialState={loaderData.initialState as State | undefined}
         smartContractAddress={loaderData.smartContractAddress as Address}
         tokenId={BigInt(loaderData.tokenId)}
