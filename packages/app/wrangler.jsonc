@@ -13,6 +13,7 @@
 	"vars": {
 		"VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare default",
 		"APP_VERSION": "default-vars-version",
+		"APP_BASE_URI": "https://launchpad-dev.sokushuu.de",
 		"FAUCET_PRIVATE_KEY": "default-faucet-private-key",
 		"GEMINI_API_KEY": "default-gemini-api-key",
 		"MANAGER_CONTRACT_ADDRESS": "default-manager-contract-address",

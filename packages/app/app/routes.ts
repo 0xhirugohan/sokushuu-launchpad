@@ -1,4 +1,4 @@
-import { type RouteConfig, route, layout, index } from "@react-router/dev/routes";
+import { type RouteConfig, route, layout, index, prefix } from "@react-router/dev/routes";
 
 export default [
     layout("./layout/layout.tsx", [
@@ -7,6 +7,9 @@ export default [
         route("chain", "routes/chain.tsx"),
         route("launch", "routes/launch.tsx"),
         route("view/:smartContractAddress/:tokenId", "routes/view.tsx"),
-        route("api/nft/:smartContractAddress/:tokenId", "routes/api.tsx")
-    ])
+    ]),
+    ...prefix("api", [
+        route("nft/:smartContractAddress/:tokenId", "routes/api.tsx"),
+        route("rpc", "routes/api/rpc.tsx")
+    ]),
 ] satisfies RouteConfig;
