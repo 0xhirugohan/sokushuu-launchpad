@@ -18,7 +18,7 @@ const config: Config = createConfig({
     connectors: [injected()],
     transports: {
         // @todo change this on deployment
-        [pharosDevnet.id]: http(pharosDevnet.rpcUrls.default.http[1])
+        [pharosDevnet.id]: http(pharosDevnet.rpcUrls.default.http[0])
         // [localChain.id]: http(localChain.rpcUrls.default.http[0])
     },
 })

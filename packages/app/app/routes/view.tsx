@@ -17,7 +17,8 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
     const smartContractAddress = params.smartContractAddress;
     const tokenId = params.tokenId;
     const baseURI = context.cloudflare.env.APP_BASE_URI;
-    return { initialState, smartContractAddress, tokenId, baseURI };
+    const nftLaunchManagerAddress = context.cloudflare.env.MANAGER_CONTRACT_ADDRESS;
+    return { initialState, smartContractAddress, nftLaunchManagerAddress, tokenId, baseURI };
 }
 
 export default function View({
@@ -25,6 +26,7 @@ export default function View({
 }: Route.ComponentProps) {
     return <ViewPage
         baseURI={loaderData.baseURI}
+        nftLaunchManagerAddress={loaderData.nftLaunchManagerAddress as Address}
         initialState={loaderData.initialState as State | undefined}
         smartContractAddress={loaderData.smartContractAddress as Address}
         tokenId={BigInt(loaderData.tokenId)}

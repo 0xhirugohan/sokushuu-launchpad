@@ -77,7 +77,7 @@ contract NFTLaunchManagerTest is Test {
         NFTLauncher nftLauncher = NFTLauncher(nftAddress);
         string memory baseURI = nftLauncher.baseURI();
         string memory actualTokenURI = nftLauncher.tokenURI(tokenId);
-        string memory expectedTokenURI = string.concat(baseURI, "0.json");
+        string memory expectedTokenURI = string.concat(baseURI, "0");
 
         assertEq(actualTokenURI, expectedTokenURI);
 
