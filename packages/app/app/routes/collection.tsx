@@ -2,28 +2,28 @@ import { readContract, readContracts } from "@wagmi/core";
 import type { State } from "wagmi";
 import type { Address } from "viem";
 
+import { getWalletStateFromCookie } from "~/libs/cookie";
+import type { Route } from "./+types/collection";
+import { walletConfig } from "~/libs/wallet";
 import { nftLaunchManagerAbi } from "~/abi/nftLaunchManager";
 import { nftLauncherAbi } from "~/abi/nftLauncher";
-import { getWalletStateFromCookie } from "~/libs/cookie";
-import { walletConfig } from "~/libs/wallet";
-import type { Route } from "./+types/view";
-import { ViewPage } from "../pages/view";
+import { CollectionPage } from "~/pages/collection";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ params }: Route.MetaArgs) {
+    const smartContractAddress = params.smartContractAddress;
     return [
-        { title: "Sokushuu Launcpad - View" },
-        { name: "description", content: "Curious to see the token right away?" }
+        { title: `Sokushuu Launcpad - Contract - ${smartContractAddress}` },
+        { name: "description", content: `Time to see some collection in ${smartContractAddress} ?` }
     ];
 }
 
 export async function loader({ request, context, params }: Route.LoaderArgs) {
     const initialState = await getWalletStateFromCookie({ request });
     const smartContractAddress = params.smartContractAddress;
-    const tokenId = params.tokenId;
     const baseURI = context.cloudflare.env.APP_BASE_URI;
     const nftLaunchManagerAddress = context.cloudflare.env.MANAGER_CONTRACT_ADDRESS;
 
-    const tokenIdLength: bigint = await readContract(walletConfig, {
+    const tokenId: bigint = await readContract(walletConfig, {
         abi: nftLaunchManagerAbi,
         address: nftLaunchManagerAddress as Address,
         functionName: 'getContractCurrentTokenId',
@@ -32,10 +32,9 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
         ]
     });
 
-    const length = parseInt(`${tokenIdLength}`);
-    const maxContentLength = 4;
+    const length = parseInt(`${tokenId}`);
     const contracts = Array.from({
-        length: length > maxContentLength ? maxContentLength : length,
+        length,
     }, (_, i) => length - i - 1
     ).map((id) => {
         return {
@@ -50,22 +49,18 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
     const tokenURIResults = await readContracts(walletConfig, { contracts });
     const tokenURIs = tokenURIResults.map(({ result }, index) => {
         const uri: string = baseURI === 'https://launchpad-dev.sokushuu.de' ? result as string : result?.toString().replace('https://launchpad-dev.sokushuu.de', baseURI) as string;
-        return { tokenId: BigInt(length - index - 1), tokenURI: uri ?? "" };
+        return { tokenId: BigInt(index), tokenURI: uri ?? "" };
     });
-    console.log({ tokenURIs });
 
-    return { initialState, smartContractAddress, nftLaunchManagerAddress, tokenId, baseURI, tokenURIs };
+    return { initialState, smartContractAddress, tokenURIs };
 }
 
-export default function View({
+export default function Collection({
     loaderData,
 }: Route.ComponentProps) {
-    return <ViewPage
-        baseURI={loaderData.baseURI}
-        nftLaunchManagerAddress={loaderData.nftLaunchManagerAddress as Address}
-        initialState={loaderData.initialState as State | undefined}
+    return <CollectionPage
         smartContractAddress={loaderData.smartContractAddress as Address}
-        tokenId={BigInt(loaderData.tokenId)}
+        initialState={loaderData.initialState as State | undefined}
         tokenURIs={loaderData.tokenURIs}
     />
 }
