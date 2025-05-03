@@ -11,8 +11,7 @@ interface LandingPageProps {
 const LandingPage: React.FC<LandingPageProps> = ({ initialState }) => {
     return <Layout initialState={initialState}>
         <div className="p-4 min-w-40 flex flex-col gap-y-8">
-            <p className="text-center text-4xl">Welcome to Sokushuu Launchpad</p>
-            <p className="text-lg text-center">We are still in progress</p>
+            <p className="text-center text-4xl mb-8">Welcome to Sokushuu Launchpad</p>
 
             <div className="flex flex-col gap-y-4">
                 <NavLink

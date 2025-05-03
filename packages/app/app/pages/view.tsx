@@ -4,12 +4,20 @@ import type { State } from "wagmi";
 import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useWriteContract, useConnect } from "wagmi";
 import { formatEther } from "viem";
+import { NavLink } from "react-router";
 
 import { Layout } from "~/layout";
 import { nftLauncherAbi } from "~/abi/nftLauncher";
 import { Button } from "~/components/button";
 import { walletConfig } from "~/libs/wallet";
 import { nftLaunchManagerAbi } from "~/abi/nftLaunchManager";
+import { TokenCard } from "./collection";
+import XIcon from "~/icons/x.svg";
+
+interface TokenURI {
+    tokenId: bigint;
+    tokenURI: string;
+}
 
 interface ViewPageProps {
     initialState: State | undefined;
@@ -17,6 +25,7 @@ interface ViewPageProps {
     smartContractAddress: Address;
     tokenId: bigint;
     baseURI: string;
+    tokenURIs: TokenURI[];
 }
 
 const ViewPage: React.FC<ViewPageProps> = ({
@@ -25,6 +34,7 @@ const ViewPage: React.FC<ViewPageProps> = ({
     smartContractAddress,
     tokenId,
     baseURI,
+    tokenURIs,
 }) => {
     return (
         <Layout initialState={initialState}>
@@ -34,6 +44,7 @@ const ViewPage: React.FC<ViewPageProps> = ({
                 smartContractAddress={smartContractAddress}
                 tokenId={tokenId}
                 baseURI={baseURI}
+                tokenURIs={tokenURIs}
             />
         </Layout>
     );
@@ -44,6 +55,7 @@ const ViewPageContent: React.FC<ViewPageProps> = ({
     smartContractAddress,
     tokenId,
     baseURI,
+    tokenURIs,
 }) => {
     const { address, status: addressStatus } = useAccount();
     const { refetch } = useReadContract({
@@ -120,33 +132,59 @@ const ViewPageContent: React.FC<ViewPageProps> = ({
         readTokenSale();
     }, [smartContractAddress, tokenId]);
 
-    return <div className="w-[90vw] md:w-[40vw] flex flex-col justify-center items-center gap-y-4 p-4 border-2 border-zinc-600 rounded-md">
-        { imageUrl && <img 
-            className="w-full max-h-[50vh] object-cover"
-            src={imageUrl} /> }
-        <div className="flex justify-between w-full">
-            <a className="text-blue-400 underline" href={`https://pharosscan.xyz/address/${smartContractAddress}`}>{smartContractAddress.slice(0, 6)}...{smartContractAddress.slice(-6)}</a>
-            <p>ID {tokenId.toString()}</p>
+    return <div className="w-full min-h-screen pt-16 px-4 flex flex-col gap-y-8">
+        <div className="w-full flex flex-col gap-y-4 justify-center items-center">
+            <div className="w-[90vw] md:w-[40vw] flex flex-col justify-center items-center gap-y-4 p-4 border-2 border-zinc-600 rounded-md">
+                { imageUrl && <img 
+                    className="w-full max-h-[50vh] object-cover"
+                    src={imageUrl} /> }
+                <div className="flex justify-between w-full">
+                    <NavLink
+                        className="text-blue-400 underline"
+                        to={`/view/${smartContractAddress}`}>
+                        {smartContractAddress.slice(0, 6)}...{smartContractAddress.slice(-6)}
+                    </NavLink>
+                    <a
+                        className="text-blue-400 underline"
+                        href={`https://pharosscan.xyz/token/${smartContractAddress}/instance/${tokenId.toString()}`}
+                    >
+                        ID {tokenId.toString()}
+                    </a>
+                </div>
+                <div className="flex justify-between w-full">
+                    { ownerAddress && <p>Owner <a className="text-blue-400 underline" href={`https://pharosscan.xyz/address/${ownerAddress}`} >{ownerAddress.slice(0, 6)}...{ownerAddress.slice(-6)}</a></p> }
+                    { (tokenSalePrice && (tokenSalePrice as bigint) > BigInt(0)) ? <p>{formatEther(tokenSalePrice as bigint)} PTT</p> : <p></p> }
+                </div>
+                { addressStatus === 'connected' && address && !isTokenOnSale && ownerAddress && ownerAddress === address && <SellSection nftLaunchManagerAddress={nftLaunchManagerAddress} nftContractAddress={smartContractAddress} tokenId={tokenId} /> }
+                { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress === address && <CancelSection
+                        nftLaunchManagerAddress={nftLaunchManagerAddress}
+                        nftContractAddress={smartContractAddress}
+                        tokenId={tokenId}
+                    />
+                }
+                { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress !== address && <BuySection
+                        nftLaunchManagerAddress={nftLaunchManagerAddress}
+                        nftContractAddress={smartContractAddress}
+                        tokenId={tokenId}
+                        tokenPrice={tokenSalePrice as bigint}
+                    />
+                }
+                { addressStatus === 'disconnected' && !address && isTokenOnSale && ownerAddress && ownerAddress !== address && <LoginToBuySection /> }
+            </div>
+            <a
+                href={`https://twitter.com/intent/tweet?text=Look%20at%20my%20this%20NFT%20at%20@sokushuu_de.%20Are%20you%20interested?%20&url=${baseURI}/view/${smartContractAddress}/${tokenId}`}
+                target="_blank"
+                className="p-2 flex gap-x-2 border-2 border-zinc-600 rounded-md"
+            >
+                Share on <img className="w-5 h-5" src={XIcon} />
+            </a>
         </div>
-        <div className="flex justify-between w-full">
-            { ownerAddress && <p>Owner <a className="text-blue-400 underline" href={`https://pharosscan.xyz/address/${ownerAddress}`} >{ownerAddress.slice(0, 6)}...{ownerAddress.slice(-6)}</a></p> }
-            { (tokenSalePrice && (tokenSalePrice as bigint) > BigInt(0)) ? <p>{formatEther(tokenSalePrice as bigint)} PTT</p> : <p></p> }
+        <div className="flex flex-col gap-y-4">
+            <p className="text-center">See others</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 grid-rows-1 gap-x-4 gap-y-4">
+                {tokenURIs.map(token => <TokenCard token={token} smartContractAddress={smartContractAddress} />)}
+            </div>
         </div>
-        { addressStatus === 'connected' && address && !isTokenOnSale && <SellSection nftLaunchManagerAddress={nftLaunchManagerAddress} nftContractAddress={smartContractAddress} tokenId={tokenId} /> }
-        { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress === address && <CancelSection
-                nftLaunchManagerAddress={nftLaunchManagerAddress}
-                nftContractAddress={smartContractAddress}
-                tokenId={tokenId}
-            />
-        }
-        { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress !== address && <BuySection
-                nftLaunchManagerAddress={nftLaunchManagerAddress}
-                nftContractAddress={smartContractAddress}
-                tokenId={tokenId}
-                tokenPrice={tokenSalePrice as bigint}
-            />
-        }
-        { addressStatus === 'disconnected' && !address && isTokenOnSale && ownerAddress && ownerAddress !== address && <LoginToBuySection /> }
     </div>
 }
 

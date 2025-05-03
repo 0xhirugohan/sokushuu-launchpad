@@ -6,7 +6,10 @@ export default [
         route("faucet", "routes/faucet.tsx"),
         route("chain", "routes/chain.tsx"),
         route("launch", "routes/launch.tsx"),
-        route("view/:smartContractAddress/:tokenId", "routes/view.tsx"),
+        ...prefix("view", [
+            route(":smartContractAddress/:tokenId", "routes/view.tsx"),
+            route(":smartContractAddress", "routes/collection.tsx"),
+        ]),
     ]),
     ...prefix("api", [
         route("nft/:smartContractAddress/:tokenId", "routes/api.tsx"),
