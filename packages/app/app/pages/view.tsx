@@ -103,8 +103,8 @@ const ViewPageContent: React.FC<ViewPageProps> = ({
             if (tokenURI === undefined) return;
 
             let url = new URL(tokenURI as string);
-            if (baseURI !== 'https://launchpad-dev.sokushuu.de') {
-                url = new URL((tokenURI as string).replace('https://launchpad-dev.sokushuu.de', baseURI));
+            if (baseURI !== 'https://launchpad.sokushuu.de') {
+                url = new URL((tokenURI as string).replace('https://launchpad.sokushuu.de', baseURI));
             }
             const result = await fetch(url, {
                 method: 'GET',
@@ -172,19 +172,21 @@ const ViewPageContent: React.FC<ViewPageProps> = ({
                 { addressStatus === 'disconnected' && !address && isTokenOnSale && ownerAddress && ownerAddress !== address && <LoginToBuySection /> }
             </div>
             <a
-                href={`https://twitter.com/intent/tweet?text=Look%20at%20my%20this%20NFT%20at%20@sokushuu_de.%20Are%20you%20interested?%20&url=${baseURI}/view/${smartContractAddress}/${tokenId}`}
+                href={`https://twitter.com/intent/tweet?text=Look%20at%20this%20NFT%20at%20@sokushuu_de.%20Are%20you%20interested?%20&url=${baseURI}/view/${smartContractAddress}/${tokenId}`}
                 target="_blank"
                 className="p-2 flex gap-x-2 border-2 border-zinc-600 rounded-md"
             >
                 Share on <img className="w-5 h-5" src={XIcon} />
             </a>
         </div>
-        <div className="flex flex-col gap-y-4">
-            <p className="text-center">See others</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 grid-rows-1 gap-x-4 gap-y-4">
-                {tokenURIs.map(token => <TokenCard token={token} smartContractAddress={smartContractAddress} />)}
+        { tokenURIs.length > 1 && 
+            <div className="flex flex-col gap-y-4">
+                <p className="text-center">See others</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 grid-rows-1 gap-x-4 gap-y-4">
+                    {tokenURIs.map(token => <TokenCard token={token} smartContractAddress={smartContractAddress} baseURI={baseURI} />)}
+                </div>
             </div>
-        </div>
+        }
     </div>
 }
 

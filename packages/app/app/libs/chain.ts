@@ -13,7 +13,9 @@ const pharosDevnet = defineChain({
             http: [
                 // 'https://devnet.dplabs-internal.com',
                 // 'http://localhost:5173/api/rpc',
-                'https://launchpad-dev.sokushuu.de/api/rpc'
+                // 'https://launchpad-dev.sokushuu.de/api/rpc',
+                'https://launchpad.sokushuu.de/api/rpc',
+                'https://devnet.dplabs-internal.com',
             ],
             webSocket: ['wss://devnet.dplabs-internal.com']
         },

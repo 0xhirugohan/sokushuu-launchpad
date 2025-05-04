@@ -31,6 +31,7 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
     const [collectionName, setCollectionName] = useState<string>("");
     const [collectionTicker, setCollectionTicker] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
+    const [txHash, setTxHash] = useState<string>();
 
     const handleDeployContract = async () => {
         if (!account.address) {
@@ -45,7 +46,7 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
             );
             const salt: Hex = keccak256(packed);
 
-            await writeContractAsync({
+            const hash = await writeContractAsync({
                 abi: nftLaunchManagerAbi,
                 address: managerContractAddress,
                 functionName: 'deployNFT',
@@ -55,11 +56,11 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
                     salt,
                 ],
             });
+            setTxHash(hash);
 
             setIsLoading(false);
             setCollectionName("");
             setCollectionTicker("");
-            onCancel();
         } catch (err) {
             setIsLoading(false);
             console.log({ err });
@@ -104,6 +105,11 @@ export const CreateNFTContract: React.FC<CreateNFTContractProps> = ({
                 { isLoading ? 'Deploying...' :  'Deploy NFT Collection' }
             </Button>
             { isUserOwnNFTContract && <Button onClick={onCancel}>Cancel</Button> }
+            { txHash && <div className="flex flex-col gap-y-4">
+                    <p>Transaction submitted: <a className="underline" href={`https://pharosscan.xyz/tx/${txHash}`}>{txHash?.slice(0, 6)}...{txHash?.slice(-6)}</a></p>
+                    <p>Please refresh the page to update get new tx status</p>
+                </div>    
+            }
         </div>
     </div>
 }

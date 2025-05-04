@@ -4,7 +4,7 @@ import type { Address } from "viem";
 
 import { getWalletStateFromCookie } from "~/libs/cookie";
 import type { Route } from "./+types/collection";
-import { walletConfig } from "~/libs/wallet";
+import { serverWalletConfig } from "~/libs/wallet";
 import { nftLaunchManagerAbi } from "~/abi/nftLaunchManager";
 import { nftLauncherAbi } from "~/abi/nftLauncher";
 import { CollectionPage } from "~/pages/collection";
@@ -23,7 +23,7 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
     const baseURI = context.cloudflare.env.APP_BASE_URI;
     const nftLaunchManagerAddress = context.cloudflare.env.MANAGER_CONTRACT_ADDRESS;
 
-    const tokenId: bigint = await readContract(walletConfig, {
+    const tokenId: bigint = await readContract(serverWalletConfig, {
         abi: nftLaunchManagerAbi,
         address: nftLaunchManagerAddress as Address,
         functionName: 'getContractCurrentTokenId',
@@ -46,13 +46,13 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
             ],
         };
     });
-    const tokenURIResults = await readContracts(walletConfig, { contracts });
+    const tokenURIResults = await readContracts(serverWalletConfig, { contracts });
     const tokenURIs = tokenURIResults.map(({ result }, index) => {
-        const uri: string = baseURI === 'https://launchpad-dev.sokushuu.de' ? result as string : result?.toString().replace('https://launchpad-dev.sokushuu.de', baseURI) as string;
-        return { tokenId: BigInt(index), tokenURI: uri ?? "" };
+        const uri: string = baseURI as string === 'https://launchpad.sokushuu.de' ? result as string : result?.toString().replace('https://launchpad.sokushuu.de', baseURI) as string;
+        return { tokenId: BigInt(length - index - 1), tokenURI: uri ?? "" };
     });
 
-    return { initialState, smartContractAddress, tokenURIs };
+    return { initialState, baseURI, smartContractAddress, tokenURIs };
 }
 
 export default function Collection({
@@ -62,5 +62,6 @@ export default function Collection({
         smartContractAddress={loaderData.smartContractAddress as Address}
         initialState={loaderData.initialState as State | undefined}
         tokenURIs={loaderData.tokenURIs}
+        baseURI={loaderData.baseURI}
     />
 }

@@ -106,7 +106,7 @@ const Faucet: React.FC<FaucetPageProps> = ({ initialState, faucet, constant }) =
                             value={faucet.address}
                             disabled
                         />
-                        {faucetBalance !== undefined && <p>Balance: {formatEther(faucetBalance)} ETH</p>}
+                        {faucetBalance !== undefined && <p>Balance: {formatEther(faucetBalance)} PTT</p>}
                     </div>
                     <div className="flex flex-col gap-y-2">
                         <label>Wallet Address</label>
@@ -119,7 +119,7 @@ const Faucet: React.FC<FaucetPageProps> = ({ initialState, faucet, constant }) =
                             placeholder="0x68FcE2692772f5B51A638D1c288C06951b91A4b1"
                             value={inputAddress}
                         />
-                        {addressBalance !== undefined && <p>Balance: {formatEther(addressBalance)} ETH</p>}
+                        {addressBalance !== undefined && <p>Balance: {formatEther(addressBalance)} PTT</p>}
                     </div>
                 </div>
                 <div className="flex flex-col w-full">

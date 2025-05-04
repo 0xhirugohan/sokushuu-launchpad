@@ -23,4 +23,19 @@ const config: Config = createConfig({
     },
 })
 
-export { config as walletConfig }
+const serverWalletConfig: Config = createConfig({
+    chains: [pharosDevnet],
+    // chains: [localChain],
+    ssr: true,
+    storage: createStorage({
+        storage: cookieStorage,
+    }),
+    connectors: [injected()],
+    transports: {
+        // @todo change this on deployment
+        [pharosDevnet.id]: http(pharosDevnet.rpcUrls.default.http[1])
+        // [localChain.id]: http(localChain.rpcUrls.default.http[0])
+    },
+})
+
+export { config as walletConfig, serverWalletConfig }

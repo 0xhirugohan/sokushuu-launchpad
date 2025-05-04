@@ -9,7 +9,7 @@ import { Faucet as FaucetPage } from "../faucet/faucet";
 import { setUserLatestFaucetClaim } from "../faucet/kv";
 import { isUserEligibleToClaimFaucet } from "~/libs/faucet";
 import { getWalletStateFromCookie } from "~/libs/cookie";
-import { walletConfig } from "~/libs/wallet";
+import { serverWalletConfig } from "~/libs/wallet";
 
 const MAXIMUM_ETH_BALANCE_TO_CLAIM_FAUCET = parseEther('1');
 const FAUCET_DRIP_AMOUNT_IN_ETH = parseEther('0.01');
@@ -24,7 +24,7 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ context, params, request }: Route.LoaderArgs) {
     const faucetAccount = privateKeyToAccount(context.cloudflare.env.FAUCET_PRIVATE_KEY as `0x${string}`);
     const faucetWalletAddress = faucetAccount.address;
-    const faucetBalance = await getBalance(walletConfig, {
+    const faucetBalance = await getBalance(serverWalletConfig, {
         address: faucetWalletAddress,
     });
     const initialState = await getWalletStateFromCookie({ request });
@@ -70,7 +70,7 @@ export async function action({
         const walletClient = createWalletClient({
             account,
             chain: pharosDevnet,
-            transport: http(),
+            transport: http(pharosDevnet.rpcUrls.default.http[1]),
         });
         const hash = await walletClient.sendTransaction({
             account,

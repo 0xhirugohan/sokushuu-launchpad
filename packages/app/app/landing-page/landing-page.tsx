@@ -11,7 +11,9 @@ interface LandingPageProps {
 const LandingPage: React.FC<LandingPageProps> = ({ initialState }) => {
     return <Layout initialState={initialState}>
         <div className="p-4 min-w-40 flex flex-col gap-y-8">
-            <p className="text-center text-4xl mb-8">Welcome to Sokushuu Launchpad</p>
+            <p className="text-center text-4xl">Welcome to <br /> Sokushuu Launchpad</p>
+
+            <p className="text-center">Craft your own personalized NFT Token today</p>
 
             <div className="flex flex-col gap-y-4">
                 <NavLink
@@ -19,18 +21,6 @@ const LandingPage: React.FC<LandingPageProps> = ({ initialState }) => {
                     className="text-center border-2 border-zinc-600 p-2 rounded-md"
                 >
                     Launch Token
-                </NavLink>
-                <NavLink
-                    to="/faucet"
-                    className="text-center border-2 border-zinc-600 p-2 rounded-md"
-                >
-                    Get a faucet
-                </NavLink>
-                <NavLink
-                    to="/chain"
-                    className="text-center border-2 border-zinc-600 p-2 rounded-md"
-                >
-                    Add Chain
                 </NavLink>
             </div>
         </div>

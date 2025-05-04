@@ -5,7 +5,7 @@ import type { Address } from "viem";
 import { nftLaunchManagerAbi } from "~/abi/nftLaunchManager";
 import { nftLauncherAbi } from "~/abi/nftLauncher";
 import { getWalletStateFromCookie } from "~/libs/cookie";
-import { walletConfig } from "~/libs/wallet";
+import { serverWalletConfig } from "~/libs/wallet";
 import type { Route } from "./+types/view";
 import { ViewPage } from "../pages/view";
 
@@ -23,7 +23,7 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
     const baseURI = context.cloudflare.env.APP_BASE_URI;
     const nftLaunchManagerAddress = context.cloudflare.env.MANAGER_CONTRACT_ADDRESS;
 
-    const tokenIdLength: bigint = await readContract(walletConfig, {
+    const tokenIdLength: bigint = await readContract(serverWalletConfig, {
         abi: nftLaunchManagerAbi,
         address: nftLaunchManagerAddress as Address,
         functionName: 'getContractCurrentTokenId',
@@ -47,12 +47,11 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
             ],
         };
     });
-    const tokenURIResults = await readContracts(walletConfig, { contracts });
+    const tokenURIResults = await readContracts(serverWalletConfig, { contracts });
     const tokenURIs = tokenURIResults.map(({ result }, index) => {
-        const uri: string = baseURI === 'https://launchpad-dev.sokushuu.de' ? result as string : result?.toString().replace('https://launchpad-dev.sokushuu.de', baseURI) as string;
+        const uri: string = baseURI as string === 'https://launchpad-dev.sokushuu.de' ? result as string : result?.toString().replace('https://launchpad-dev.sokushuu.de', baseURI) as string;
         return { tokenId: BigInt(length - index - 1), tokenURI: uri ?? "" };
     });
-    console.log({ tokenURIs });
 
     return { initialState, smartContractAddress, nftLaunchManagerAddress, tokenId, baseURI, tokenURIs };
 }

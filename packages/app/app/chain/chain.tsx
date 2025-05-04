@@ -42,8 +42,8 @@ const ChainContent = () => {
                     <p>RPC Public Endpoint</p>
                     <a
                         className="underline"
-                        href={pharosDevnet.rpcUrls.default.http[0] as string}>
-                        {pharosDevnet.rpcUrls.default.http[0]}
+                        href={pharosDevnet.rpcUrls.default.http[1] as string}>
+                        {pharosDevnet.rpcUrls.default.http[1]}
                     </a>
                 </div>
                 <div>

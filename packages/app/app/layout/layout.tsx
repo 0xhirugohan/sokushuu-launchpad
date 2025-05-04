@@ -23,7 +23,7 @@ const Layout: React.FC<LayoutProps> = ({ children, initialState, isLoginRequired
         <QueryClientProvider client={queryClient}>
             <div className="relative min-w-40 w-full">
                 <WalletLayout setAddressProp={setAddress} />
-                <div className="flex items-center justify-center min-h-screen">
+                <div className="flex items-center justify-center min-h-screen mb-20">
                     { isLoginRequired && !address && <LoginLayout /> }
                     { ((isLoginRequired && address) || !isLoginRequired) && children}
                 </div>
