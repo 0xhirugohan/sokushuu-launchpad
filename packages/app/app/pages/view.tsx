@@ -13,13 +13,14 @@ import { walletConfig } from "~/libs/wallet";
 import { nftLaunchManagerAbi } from "~/abi/nftLaunchManager";
 import { TokenCard } from "./collection";
 import XIcon from "~/icons/x.svg";
+import type { WalletLayoutType } from "~/types/walletLayout";
 
 interface TokenURI {
     tokenId: bigint;
     tokenURI: string;
 }
 
-interface ViewPageProps {
+interface ViewPageProps extends WalletLayoutType {
     initialState: State | undefined;
     nftLaunchManagerAddress: Address;
     smartContractAddress: Address;
@@ -35,9 +36,11 @@ const ViewPage: React.FC<ViewPageProps> = ({
     tokenId,
     baseURI,
     tokenURIs,
+    xellarAppId,
+    walletconnectProjectId,
 }) => {
     return (
-        <Layout initialState={initialState}>
+        <Layout initialState={initialState} xellarAppId={xellarAppId} walletconnectProjectId={walletconnectProjectId}>
             <ViewPageContent
                 initialState={initialState}
                 nftLaunchManagerAddress={nftLaunchManagerAddress}
@@ -45,6 +48,8 @@ const ViewPage: React.FC<ViewPageProps> = ({
                 tokenId={tokenId}
                 baseURI={baseURI}
                 tokenURIs={tokenURIs}
+                xellarAppId={xellarAppId}
+                walletconnectProjectId={walletconnectProjectId}
             />
         </Layout>
     );

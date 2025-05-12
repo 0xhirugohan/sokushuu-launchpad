@@ -28,6 +28,8 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
         address: faucetWalletAddress,
     });
     const initialState = await getWalletStateFromCookie({ request });
+    const xellarAppId = context.cloudflare.env.XELLAR_APP_ID;
+    const walletConnectProjectId = context.cloudflare.env.WALLETCONNECT_PROJECT_ID;
     return {
         initialState,
         faucet: {
@@ -38,6 +40,8 @@ export async function loader({ context, params, request }: Route.LoaderArgs) {
             MAXIMUM_ETH_BALANCE_TO_CLAIM_FAUCET,
             FAUCET_DRIP_AMOUNT_IN_ETH,
         },
+        xellarAppId,
+        walletConnectProjectId
     };
 }
 
@@ -101,5 +105,7 @@ export default function Faucet({
         initialState={loaderData.initialState as State | undefined}
         faucet={loaderData.faucet}
         constant={loaderData.constant}
+        xellarAppId={loaderData.xellarAppId}
+        walletconnectProjectId={loaderData.walletConnectProjectId}
     />
 }

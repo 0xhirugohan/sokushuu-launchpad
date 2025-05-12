@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { NavLink } from "react-router";
 
 import { Layout } from "~/layout";
+import type { WalletLayoutType } from "~/types/walletLayout";
 
 interface TokenURI {
     tokenId: bigint;
     tokenURI: string;
 }
 
-interface CollectionPageProps {
+interface CollectionPageProps extends WalletLayoutType {
     initialState: State | undefined;
     tokenURIs: TokenURI[];
     smartContractAddress: Address;
@@ -23,9 +24,11 @@ const CollectionPage: React.FC<CollectionPageProps> = ({
     tokenURIs,
     smartContractAddress,
     baseURI,
+    xellarAppId,
+    walletconnectProjectId,
 }) => {
     return (
-        <Layout initialState={initialState}>
+        <Layout initialState={initialState} xellarAppId={xellarAppId} walletconnectProjectId={walletconnectProjectId}>
             <div className="flex flex-col gap-y-4 min-h-screen w-full pt-16 px-4">
                 <p>Contract: {smartContractAddress.slice(0, 4)}...{smartContractAddress.slice(-4)}</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-4">

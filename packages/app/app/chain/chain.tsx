@@ -9,13 +9,18 @@ import {
 import { pharosDevnet } from "~/libs/chain";
 import { Layout } from "~/layout/layout";
 import { walletConfig } from "~/libs/wallet";
+import type { WalletLayoutType } from "~/types/walletLayout";
 
-interface ChainPageProps {
+interface ChainPageProps extends WalletLayoutType {
     initialState: State | undefined;
 }
 
-const ChainPage: React.FC<ChainPageProps> = ({ initialState }) => {
-    return <Layout initialState={initialState}>
+const ChainPage: React.FC<ChainPageProps> = ({ initialState, xellarAppId, walletconnectProjectId }) => {
+    return <Layout
+        initialState={initialState}
+        xellarAppId={xellarAppId}
+        walletconnectProjectId={walletconnectProjectId}
+    >
         <ChainContent />
     </Layout>
 };

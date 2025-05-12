@@ -13,6 +13,8 @@ declare namespace Cloudflare {
 		R2_ACCESS_KEY: "default-r2-access-key";
 		R2_SECRET_KEY: "default-r2-secret-key";
 		R2_ENDPOINT: "default-r2-endpoint";
+        XELLAR_APP_ID: "default-xellar-app-id";
+        WALLETCONNECT_PROJECT_ID: "default-walletconnect-project-id";
 		sokushuu_launchpad_dev_r2: R2Bucket;
 	}
 }

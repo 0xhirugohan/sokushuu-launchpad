@@ -8,8 +8,9 @@ import { createPublicClient, http, formatEther } from "viem";
 import { pharosDevnet } from "~/libs/chain";
 import { Layout } from "~/layout/layout";
 import { walletConfig } from "~/libs/wallet";
+import type { WalletLayoutType } from "~/types/walletLayout";
 
-interface FaucetPageProps {
+interface FaucetPageProps extends WalletLayoutType {
     initialState: State | undefined;
     faucet: { balance: bigint; address: `0x${string}` };
     constant: {
@@ -18,7 +19,7 @@ interface FaucetPageProps {
     };
 }
 
-const Faucet: React.FC<FaucetPageProps> = ({ initialState, faucet, constant }) => {
+const Faucet: React.FC<FaucetPageProps> = ({ initialState, faucet, constant, xellarAppId, walletconnectProjectId }) => {
     const submit = useSubmit();
     const fetcher = useFetcher();
     const [inputAddress, setInputAddress] = useState<string>();
@@ -89,7 +90,7 @@ const Faucet: React.FC<FaucetPageProps> = ({ initialState, faucet, constant }) =
     }, []);
 
     return (
-        <Layout initialState={initialState}>
+        <Layout initialState={initialState} xellarAppId={xellarAppId} walletconnectProjectId={walletconnectProjectId}>
             <fetcher.Form
                 className="p-8 w-[80vw] md:w-[40vw] min-h-[80vh] border-2 border-zinc-600 flex flex-col justify-between rounded-lg"
                 method="POST"

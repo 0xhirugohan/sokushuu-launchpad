@@ -20,7 +20,9 @@
 		"R2_BUCKET_URL": "default-r2-bucket-url",
 		"R2_ACCESS_KEY": "default-r2-access-key",
 		"R2_SECRET_KEY": "default-r2-secret-key",
-		"R2_ENDPOINT": "default-r2-endpoint"
+		"R2_ENDPOINT": "default-r2-endpoint",
+		"XELLAR_APP_ID": "default-xellar-app-id",
+		"WALLETCONNECT_PROJECT_ID": "default-walletconnect-project-id"
 	},
 	"observability": {
 		"enabled": true

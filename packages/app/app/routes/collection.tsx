@@ -22,6 +22,8 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
     const smartContractAddress = params.smartContractAddress;
     const baseURI = context.cloudflare.env.APP_BASE_URI;
     const nftLaunchManagerAddress = context.cloudflare.env.MANAGER_CONTRACT_ADDRESS;
+    const xellarAppId = context.cloudflare.env.XELLAR_APP_ID;
+    const walletConnectProjectId = context.cloudflare.env.WALLETCONNECT_PROJECT_ID;
 
     const tokenId: bigint = await readContract(serverWalletConfig, {
         abi: nftLaunchManagerAbi,
@@ -52,7 +54,7 @@ export async function loader({ request, context, params }: Route.LoaderArgs) {
         return { tokenId: BigInt(length - index - 1), tokenURI: uri ?? "" };
     });
 
-    return { initialState, baseURI, smartContractAddress, tokenURIs };
+    return { initialState, baseURI, smartContractAddress, tokenURIs, xellarAppId, walletConnectProjectId };
 }
 
 export default function Collection({
@@ -63,5 +65,7 @@ export default function Collection({
         initialState={loaderData.initialState as State | undefined}
         tokenURIs={loaderData.tokenURIs}
         baseURI={loaderData.baseURI}
+        xellarAppId={loaderData.xellarAppId}
+        walletconnectProjectId={loaderData.walletConnectProjectId}
     />
 }

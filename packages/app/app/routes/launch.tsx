@@ -18,10 +18,14 @@ export function meta({}: Route.MetaArgs) {
 export async function loader({ context, request }: Route.LoaderArgs) {
   const initialState = await getWalletStateFromCookie({ request });
   const nftContracts: Address[] = []; 
+  const xellarAppId = context.cloudflare.env.XELLAR_APP_ID;
+  const walletConnectProjectId = context.cloudflare.env.WALLETCONNECT_PROJECT_ID;
   return {
     initialState,
     nftContracts,
     managerContractAddress: context.cloudflare.env.MANAGER_CONTRACT_ADDRESS,
+    xellarAppId,
+    walletConnectProjectId,
   };
 }
 
@@ -109,5 +113,7 @@ export default function Launch({ loaderData }: Route.ComponentProps) {
         initialState={loaderData.initialState as State | undefined}
         nftContracts={loaderData.nftContracts}
         managerContractAddress={loaderData.managerContractAddress as Address}
+        xellarAppId={loaderData.xellarAppId}
+        walletconnectProjectId={loaderData.walletConnectProjectId}
     />
 }

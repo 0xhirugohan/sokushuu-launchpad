@@ -3,13 +3,14 @@ import { NavLink } from "react-router";
 import type { State } from "wagmi";
 
 import { Layout } from "~/layout/layout";
+import type { WalletLayoutType } from "~/types/walletLayout";
 
-interface LandingPageProps {
+interface LandingPageProps extends WalletLayoutType {
     initialState: State | undefined;
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ initialState }) => {
-    return <Layout initialState={initialState}>
+const LandingPage: React.FC<LandingPageProps> = ({ initialState, xellarAppId, walletconnectProjectId }) => {
+    return <Layout initialState={initialState} xellarAppId={xellarAppId} walletconnectProjectId={walletconnectProjectId}>
         <div className="p-4 min-w-40 flex flex-col gap-y-8">
             <p className="text-center text-4xl">Welcome to <br /> Sokushuu Launchpad</p>
 
