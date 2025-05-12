@@ -1,7 +1,6 @@
 import { Link } from 'react-router';
-import './App.css'
 
-function App() {
+function Root() {
   return (
     <>
       <div className="p-4 min-w-40 flex flex-col gap-y-8">
@@ -22,4 +21,4 @@ function App() {
   )
 }
 
-export default App
+export default Root
