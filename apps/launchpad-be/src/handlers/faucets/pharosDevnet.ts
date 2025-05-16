@@ -1,10 +1,17 @@
 import { Context } from 'hono'
 import { createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
+import type { KVNamespace } from '@cloudflare/workers-types';
 
 import { pharosDevnetChain } from '../../libs'
 
-const pharosDevnet = async (c: Context) => {
+type Bindings = {
+  KV: KVNamespace;
+  EVM_FAUCET_PRIVATE_KEY: string;
+  PHAROS_DEVNET_RPC_URI: string;
+}
+
+const pharosDevnet = async (c: Context<{ Bindings: Bindings }>) => {
     const body = await c.req.json();
 
     const toAddress: string | null = body.address as string;
@@ -17,17 +24,19 @@ const pharosDevnet = async (c: Context) => {
         })
     }
 
-    /*
-    const isUserEligible = await isUserEligibleToClaimFaucet(context, toAddress);
-    if (!isUserEligible) {
-        return {
-            address: formData.get("address"),
-            hash: null,
-            message: "You can only claim once in every 24 hours",
-            ok: false,
+    const recentClaim = await c.env.KV.get(toAddress, "text");
+    if (recentClaim !== "") {
+        const minDateToClaim = new Date(recentClaim as string);
+        minDateToClaim.setDate(minDateToClaim.getDate() + 1);
+        if (new Date() < minDateToClaim) {
+            return c.json({
+                address: toAddress,
+                hash: null,
+                ok: false,
+                message: "You can only claim once in every 24 hours"
+            })
         }
     }
-    */
 
     try {
         const faucetPrivateKey = c.env.EVM_FAUCET_PRIVATE_KEY;
@@ -43,7 +52,7 @@ const pharosDevnet = async (c: Context) => {
             value: parseEther("0.01"),
         })
 
-        // await setUserLatestFaucetClaim(context, toAddress);
+        await c.env.KV.put(toAddress, new Date().toISOString());
 
         return c.json({
             address: toAddress,

@@ -6,7 +6,13 @@
   "vars": {
     "PHAROS_DEVNET_RPC_URI": "my-variable",
     "EVM_FAUCET_PRIVATE_KEY": "my-variable"
-  }
+  },
+  "kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "c971fa43207b4c5ba22f8f30a940822d"
+		}
+	],
   // "compatibility_flags": [
   //   "nodejs_compat"
   // ],
