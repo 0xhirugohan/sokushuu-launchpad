@@ -2,7 +2,11 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router'
 import './index.css'
-import { Root, Chain } from './pages'
+import {
+  Root,
+  Chain,
+  Faucet,
+} from './pages'
 import { Layout } from './layout'
 
 createRoot(document.getElementById('root')!).render(
@@ -12,6 +16,7 @@ createRoot(document.getElementById('root')!).render(
         <Route element={<Layout />}>
           <Route path="/" element={<Root />} />
           <Route path="/chain" element={<Chain />} />
+          <Route path="/faucet" element={<Faucet />} />
         </Route>
       </Routes>
     </BrowserRouter>
