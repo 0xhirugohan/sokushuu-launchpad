@@ -1,7 +1,10 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 
-import { pharosDevnetRPC } from './handlers'
+import {
+  pharosDevnetRPC,
+  pharosDevnetFaucet,
+} from './handlers'
 
 const app = new Hono()
 
@@ -17,8 +20,11 @@ app.get('/', (c) => {
 })
 
 const rpcs = new Hono().basePath('/rpc');
-
 rpcs.post('/pharos-devnet', pharosDevnetRPC)
 app.route('/', rpcs);
+
+const faucets = new Hono().basePath('/faucet');
+faucets.post('/pharos-devnet', pharosDevnetFaucet)
+app.route('/', faucets)
 
 export default app

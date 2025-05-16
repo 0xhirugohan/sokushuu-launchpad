@@ -4,7 +4,8 @@
   "main": "src/index.ts",
   "compatibility_date": "2025-05-16",
   "vars": {
-    "PHAROS_DEVNET_RPC_URI": "my-variable"
+    "PHAROS_DEVNET_RPC_URI": "my-variable",
+    "EVM_FAUCET_PRIVATE_KEY": "my-variable"
   }
   // "compatibility_flags": [
   //   "nodejs_compat"
