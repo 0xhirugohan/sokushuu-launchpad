@@ -11,7 +11,6 @@ import XIcon from "./assets/x.svg";
 import GithubIcon from "./assets/github.svg";
 
 interface LayoutProps {
-    // children: ReactNode;
     // initialState: State | undefined;
     isLoginRequired?: boolean;
 }
