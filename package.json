@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "fe:dev": "bun run -F launchpad-fe dev",
+    "be:dev": "bun run -F launchpad-be dev",
     "app:dev": "bun run -F app dev",
     "app:build": "bun run -F app build",
     "app:preview": "bun run -F app preview",
