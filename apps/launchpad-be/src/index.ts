@@ -7,6 +7,7 @@ import {
   pharosDevnetFaucet,
   generateImage,
   uploadImage,
+  getNFTImage,
 } from './handlers'
 
 type Bindings = {
@@ -41,5 +42,7 @@ app.route('/', llms)
 const users = new Hono().basePath('/user');
 users.post('/upload-image', uploadImage)
 app.route('/', users)
+
+app.get('/api/nft/:smartContractAddress/:tokenId', getNFTImage)
 
 export default app
