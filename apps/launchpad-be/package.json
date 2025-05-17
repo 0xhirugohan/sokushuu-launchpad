@@ -6,6 +6,7 @@
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {
+    "aws4fetch": "^1.0.20",
     "hono": "^4.7.9",
     "viem": "^2.29.3"
   },
