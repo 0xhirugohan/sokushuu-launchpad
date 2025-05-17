@@ -58,8 +58,6 @@ const Launch = () => {
         isUserOwnNFTContract={(userOwnedContracts && userOwnedContracts.length > 0) ?? false}
         managerContractAddress={managerContractAddress}
         getUserOwnedContracts={getUserOwnedContracts}
-
-        userOwnedAmount={userOwnedContracts?.length ?? 0}
         onCancel={switchToPrompt}
     />;
     else if (userOwnedContractsStatus === 'success' && userOwnedContracts && userOwnedContracts.length > 0) return <PromptImage
