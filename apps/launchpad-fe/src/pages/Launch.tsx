@@ -6,7 +6,7 @@ import type { Address } from 'viem'
 import { CreateNFTContract, PromptImage } from './'
 import { walletConfig, nftLaunchManagerAbi } from '../libs'
 
-const managerContractAddress = '0x0973f46b0C8A5C8cb71DA32D5932C4824b94fa88';
+const managerContractAddress = import.meta.env.VITE_LAUNCH_MANAGER_PUBLIC_ADDRESS;
 
 const Launch = () => {
     const {

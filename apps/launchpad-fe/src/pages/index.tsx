@@ -5,6 +5,7 @@ import Faucet from './Faucet'
 import Launch from './Launch'
 import CreateNFTContract from './CreateNFTContract'
 import PromptImage from './PromptImage'
+import View from './View'
 
 export {
     Root,
@@ -14,4 +15,5 @@ export {
     Launch,
     CreateNFTContract,
     PromptImage,
+    View,
 }
