@@ -6,6 +6,7 @@ import Launch from './Launch'
 import CreateNFTContract from './CreateNFTContract'
 import PromptImage from './PromptImage'
 import View from './View'
+import Collection from './Collection'
 
 export {
     Root,
@@ -16,4 +17,5 @@ export {
     CreateNFTContract,
     PromptImage,
     View,
+    Collection,
 }
