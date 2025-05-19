@@ -1,8 +1,11 @@
-import { type ReactNode, useState } from 'react'
-import { type State, WagmiProvider } from 'wagmi'
-import { type Address } from 'viem'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useState } from 'react'
 import { Outlet } from 'react-router'
+import { QueryClient } from '@tanstack/react-query'
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister'
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
+import { WagmiProvider, deserialize, serialize } from 'wagmi'
+
+import { type Address } from 'viem'
 
 import { walletConfig } from './libs'
 import { WalletHeader } from './components';
@@ -15,13 +18,25 @@ interface LayoutProps {
     isLoginRequired?: boolean;
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+    defaultOptions: {
+        queries: {
+            gcTime: 1_000 * 60 * 60 * 24 // 24 hours
+        }
+    }
+});
+
+const persister = createSyncStoragePersister({
+    serialize,
+    storage: window.localStorage,
+    deserialize,
+})
 
 const Layout: React.FC<LayoutProps> = ({ isLoginRequired }) => {
     const [address, setAddress] = useState<Address | undefined>();
     const initialState = undefined; // FIXME
     return <WagmiProvider config={walletConfig} initialState={initialState}>
-        <QueryClientProvider client={queryClient}>
+        <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
             <div className="relative min-w-40 w-full">
                 <WalletHeader setAddressProp={setAddress} />
                 <div className="flex items-center justify-center min-h-screen mb-20">
@@ -43,7 +58,7 @@ const Layout: React.FC<LayoutProps> = ({ isLoginRequired }) => {
                     </a>
                 </div>
             </div>
-        </QueryClientProvider>
+        </PersistQueryClientProvider>
     </WagmiProvider>
 }
 
