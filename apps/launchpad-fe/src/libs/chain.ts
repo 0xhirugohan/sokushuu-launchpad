@@ -1,8 +1,10 @@
 import { defineChain } from 'viem'
 
+import type { Chain } from 'viem'
+
 const pharosDevnetRpcURI: string = import.meta.env.VITE_PHAROS_DEVNET_RPC_URI;
 
-const pharosDevnet = defineChain({
+const pharosDevnet = {
     id: 50002,
     name: 'PharosDevnet',
     nativeCurrency: {
@@ -29,7 +31,7 @@ const pharosDevnet = defineChain({
             url: 'https://devnet.pharosscan.xyz/'
         }
     },
-});
+} as const satisfies Chain;
 
 const localChain = defineChain({
     id: 31337,

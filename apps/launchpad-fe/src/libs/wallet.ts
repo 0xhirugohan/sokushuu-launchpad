@@ -4,8 +4,8 @@ import {
     cookieStorage,
     createStorage,
 } from 'wagmi';
-import type { Config } from '@wagmi/core';
-import { injected } from '@wagmi/connectors';
+import type { Config } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import { pharosDevnet, localChain } from './chain';
 
 const walletConfig: Config = createConfig({

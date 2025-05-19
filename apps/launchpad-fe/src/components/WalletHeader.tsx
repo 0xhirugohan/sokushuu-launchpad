@@ -1,4 +1,3 @@
-import type React from 'react';
 import { useEffect } from 'react';
 import { NavLink } from 'react-router';
 import {
@@ -8,7 +7,9 @@ import {
     useAccountEffect,
     useSwitchChain,
 } from 'wagmi';
-import { type Address } from 'viem';
+
+import type React from 'react';
+import type { Address } from 'viem';
 
 import { walletConfig } from '../libs/wallet';
 import WalletIcon from '../assets/wallet.svg';
@@ -16,11 +17,11 @@ import FaucetIcon from '../assets/faucet.svg';
 import FileblockIcon from '../assets/fileblock.svg';
 import SokushuuImage from '../assets/sokushuu.png';
 
-interface WalletLayoutProps {
+interface WalletHeaderProps {
     setAddressProp: (address: Address | undefined) => void;
 }
 
-const WalletLayout: React.FC<WalletLayoutProps> = ({ setAddressProp }) => {
+const WalletHeader: React.FC<WalletHeaderProps> = ({ setAddressProp }) => {
     const { address, status } = useAccount({ config: walletConfig });
     const { connectors, connect } = useConnect({ config: walletConfig });
     const { disconnect } = useDisconnect({ config: walletConfig });
@@ -111,4 +112,4 @@ const WalletLayout: React.FC<WalletLayoutProps> = ({ setAddressProp }) => {
     </>
 }
 
-export default WalletLayout;
+export default WalletHeader;
