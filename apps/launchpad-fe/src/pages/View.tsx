@@ -116,8 +116,8 @@ const View = () => {
             if (tokenURI === undefined) return;
 
             let url = new URL(tokenURI as string);
-            if (baseURI !== 'https://launchpad-dev.sokushuu.de') {
-                url = new URL((tokenURI as string).replace('https://launchpad-dev.sokushuu.de', baseURI));
+            if (baseURI !== 'https://launchpad.sokushuu.de') {
+                url = new URL((tokenURI as string).replace('https://launchpad.sokushuu.de', baseURI));
             }
             const result = await fetch(url, {
                 method: 'GET',
