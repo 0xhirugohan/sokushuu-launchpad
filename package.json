@@ -16,7 +16,7 @@
   },
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "^1.2.13"
   },
   "peerDependencies": {
     "typescript": "^5"
