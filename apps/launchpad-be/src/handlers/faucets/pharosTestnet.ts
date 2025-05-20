@@ -3,15 +3,14 @@ import { createWalletClient, http, parseEther } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { KVNamespace } from '@cloudflare/workers-types';
 
-import { pharosDevnetChain } from '../../libs'
+import { pharosTestnetChain } from '../../libs'
 
 type Bindings = {
   KV: KVNamespace;
   EVM_FAUCET_PRIVATE_KEY: string;
-  PHAROS_DEVNET_RPC_URI: string;
 }
 
-const pharosDevnet = async (c: Context<{ Bindings: Bindings }>) => {
+const pharosTestnet = async (c: Context<{ Bindings: Bindings }>) => {
     const body = await c.req.json();
 
     const toAddress: string | null = body.address as string;
@@ -24,7 +23,7 @@ const pharosDevnet = async (c: Context<{ Bindings: Bindings }>) => {
         })
     }
 
-    const KVKey = `faucet.pharos.devnet.${toAddress}`;
+    const KVKey = `faucet.pharos.testnet.${toAddress}`;
     const recentClaim = await c.env.KV.get(KVKey, "text");
     if (recentClaim !== "") {
         const minDateToClaim = new Date(recentClaim as string);
@@ -44,13 +43,13 @@ const pharosDevnet = async (c: Context<{ Bindings: Bindings }>) => {
         const account = privateKeyToAccount(faucetPrivateKey as `0x${string}`);
         const walletClient = createWalletClient({
             account,
-            chain: pharosDevnetChain,
-            transport: http(pharosDevnetChain.rpcUrls.default.http[0]),
+            chain: pharosTestnetChain,
+            transport: http(pharosTestnetChain.rpcUrls.default.http[0]),
         });
         const hash = await walletClient.sendTransaction({
             account,
             to: toAddress as `0x${string}`,
-            value: parseEther("0.01"),
+            value: parseEther("0.001"),
         })
 
         await c.env.KV.put(KVKey, new Date().toISOString());
@@ -71,4 +70,4 @@ const pharosDevnet = async (c: Context<{ Bindings: Bindings }>) => {
     }
 }
 
-export default pharosDevnet;
+export default pharosTestnet;

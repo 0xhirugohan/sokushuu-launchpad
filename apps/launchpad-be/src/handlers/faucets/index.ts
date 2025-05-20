@@ -1,5 +1,7 @@
 import pharosDevnetFaucet from './pharosDevnet'
+import pharosTestnetFaucet from './pharosTestnet'
 
 export {
-    pharosDevnetFaucet
+    pharosDevnetFaucet,
+    pharosTestnetFaucet,
 }
