@@ -35,7 +35,7 @@ const ChainSelector: React.FC<ChainSelectorProps> = ({ selectedChainId, onClose 
                 </div>
                 <div className="flex flex-col gap-y-2">
                     { chains.map(chain =>
-                        <div className="flex justify-between gap-x-4">
+                        <div key={chain.id} className="flex justify-between gap-x-4">
                             <button
                                 onClick={() => onChainSelected(chain.id)}
                                 className="flex-1 flex gap-x-2 cursor-pointer border-2 border-transparent hover:border-zinc-600 rounded-md p-1"

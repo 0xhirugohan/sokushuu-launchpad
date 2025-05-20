@@ -1,13 +1,15 @@
 import {
     useAccount,
+    useChainId,
     useConnect,
     useDisconnect
 } from 'wagmi'
 
-import { pharosDevnet, walletConfig } from '../libs'
+import { walletConfig, chainMetadataByChainId } from '../libs'
 
 const ChainPage = () => {
     const { address } = useAccount({ config: walletConfig });
+    const chainId = useChainId({ config: walletConfig });
     const { connectors, connect } = useConnect({ config: walletConfig });
     const { disconnect } = useDisconnect({ config: walletConfig });
 
@@ -28,21 +30,21 @@ const ChainPage = () => {
                     <p>RPC Public Endpoint</p>
                     <a
                         className="underline"
-                        href={pharosDevnet.rpcUrls.default.http[1] as string}>
-                        {pharosDevnet.rpcUrls.default.http[1]}
+                        href={chainMetadataByChainId[chainId].rpcHttpUri}>
+                        {chainMetadataByChainId[chainId].rpcHttpUri}
                     </a>
                 </div>
                 <div>
                     <p>Explorer</p>
                     <a
                         className="underline"
-                        href={pharosDevnet.blockExplorers.default.url}>
-                        {pharosDevnet.blockExplorers.default.url}
+                        href={chainMetadataByChainId[chainId].blockExplorerURI}>
+                        {chainMetadataByChainId[chainId].blockExplorerURI}
                     </a>
                 </div>
                 <div>
                     <p>ChainID</p>
-                    <p>{pharosDevnet.id}</p>
+                    <p>{chainId}</p>
                 </div>
             </div>
         </div>

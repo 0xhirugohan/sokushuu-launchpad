@@ -1,31 +1,37 @@
-import { useEffect, useState } from 'react'
-import { getBalance } from '@wagmi/core'
-import { createPublicClient, http, formatEther } from 'viem'
+import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { useBalance, useChainId } from 'wagmi'
+import { formatUnits } from 'viem'
 
 import type { ChangeEvent } from 'react'
+import type { Address } from 'viem'
 
-import { pharosDevnet, walletConfig } from '../libs'
+import { chainMetadataByChainId, walletConfig } from '../libs'
 
 const FAUCET_ADDRESS = import.meta.env.VITE_FAUCET_EVM_PUBLIC_KEY as `0x${string}`;
 
 const Faucet = () => {
+    const queryClient = useQueryClient();
     const [inputAddress, setInputAddress] = useState<string>();
-    const [addressBalance, setAddressBalance] = useState<bigint>();
-    const [faucetBalance, setFaucetBalance] = useState<bigint>(BigInt(0));
     const [message, setMessage] = useState<string>();
     const [txHash, setTxHash] = useState<string>();
     const [apiOk, setApiOk] = useState<boolean>(true);
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const chainId = useChainId({ config: walletConfig });
+    const { data: faucetBalance, queryKey: faucetBalanceQueryKey } = useBalance({
+        address: FAUCET_ADDRESS,
+        config: walletConfig,
+    });
+    const { data: addressBalance, queryKey: addressBalanceQueryKey } = useBalance({
+        address: inputAddress as Address,
+        config: walletConfig,
+    });
 
     const handleInputAddressChange = async (event: ChangeEvent<HTMLInputElement>) => {
         setInputAddress(event.currentTarget.value);
-        setAddressBalance(BigInt(0));
 
         if (/^0x[a-fA-F0-9]{40}$/.test(event.currentTarget.value ?? '')) {
-            const newInputBalance = await getBalance(walletConfig, {
-                address: event.currentTarget.value as `0x${string}`
-            });
-            setAddressBalance(newInputBalance.value);
+            queryClient.invalidateQueries({ queryKey: addressBalanceQueryKey });
         }
     }
 
@@ -41,59 +47,34 @@ const Faucet = () => {
 
         setIsSubmitting(true);
 
-        const faucetBalancePromise = getBalance(walletConfig, {
-            address: FAUCET_ADDRESS,
-        });
-        const inputBalancePromise = getBalance(walletConfig, {
-            address: inputAddress as `0x${string}`,
-        });
-        const [newFaucetBalance, newInputBalance] = await Promise.all([
-            faucetBalancePromise,
-            inputBalancePromise,
-        ]);
-
-        setFaucetBalance(newFaucetBalance.value);
-        setAddressBalance(newInputBalance.value);
-
         try {
-        const result = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/faucet/pharos-devnet`, {
-            method: 'POST',
-            body: JSON.stringify({
-                address: inputAddress
+            const result = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URI}/faucet/${chainId}`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    address: inputAddress
+                })
             })
-        })
-        const resultBody = await result.json();
+            const resultBody = await result.json();
 
-        if (!resultBody.ok || !resultBody.hash) {
+            if (!resultBody.ok || !resultBody.hash) {
+                setIsSubmitting(false);
+                setApiOk(false);
+                setMessage(resultBody.message);
+                return;
+            }
+
             setIsSubmitting(false);
-            setApiOk(false);
-            setMessage(resultBody.message);
-            return;
-        }
-
-        setIsSubmitting(false);
-        setTxHash(resultBody.hash);
+            setTxHash(resultBody.hash);
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: faucetBalanceQueryKey }),
+                queryClient.invalidateQueries({ queryKey: addressBalanceQueryKey }),
+            ]);
         } catch (err: any) {
             setIsSubmitting(false);
             setApiOk(false);
             setMessage('Something is wrong with the server, please try again');
         }
     }
-
-    useEffect(() => {
-        // get balance
-        const client = createPublicClient({
-            chain: pharosDevnet,
-            transport: http(),
-        })
-        const getBalance = async () => {
-            const faucets = await client.getBalance({
-                address: FAUCET_ADDRESS,
-            });
-            setFaucetBalance(faucets);
-        }
-        getBalance();
-    }, []);
 
     return (
         <div
@@ -110,7 +91,7 @@ const Faucet = () => {
                         value={FAUCET_ADDRESS}
                         disabled
                     />
-                    {faucetBalance !== undefined && <p>Balance: {formatEther(faucetBalance)} PTT</p>}
+                    {faucetBalance !== undefined && <p>Balance: {formatUnits(faucetBalance.value, faucetBalance.decimals)} {faucetBalance.symbol}</p>}
                 </div>
                 <div className="flex flex-col gap-y-2">
                     <label>Wallet Address</label>
@@ -123,13 +104,13 @@ const Faucet = () => {
                         placeholder="0x68FcE2692772f5B51A638D1c288C06951b91A4b1"
                         value={inputAddress}
                     />
-                    {addressBalance !== undefined && <p>Balance: {formatEther(addressBalance)} PTT</p>}
+                    {addressBalance !== undefined && <p>Balance: {formatUnits(addressBalance.value, addressBalance.decimals)} {addressBalance.symbol}</p>}
                 </div>
             </div>
             <div className="flex flex-col w-full">
                 <div className="flex flex-col gap-x-4 gap-y-2">
                     {message && <p className={!apiOk ? 'text-red-500' : ''}>{message}</p>}
-                    {txHash && <a className="underline" href={`${pharosDevnet.blockExplorers.default.url}/tx/${txHash}`}>{txHash.slice(0, 4)}...{txHash.slice(-4)}</a>}
+                    {txHash && <a className="underline" href={`${chainMetadataByChainId[chainId].blockExplorerURI}/tx/${txHash}`}>{txHash.slice(0, 4)}...{txHash.slice(-4)}</a>}
                 </div>
                 <button
                     name="claim"

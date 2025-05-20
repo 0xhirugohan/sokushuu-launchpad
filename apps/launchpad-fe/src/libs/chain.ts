@@ -80,18 +80,24 @@ interface ChainMetadata {
     id: number;
     name: string;
     icon: string;
+    blockExplorerURI: string;
+    rpcHttpUri: string;
 }
 
 const chainMetadataByChainId: Record<number, ChainMetadata> = {
     [50002]: {
         id: 50002,
         name: 'Pharos Devnet',
-        icon: PharosChainIcon
+        icon: PharosChainIcon,
+        blockExplorerURI: pharosDevnet.blockExplorers.default.url,
+        rpcHttpUri: pharosDevnet.rpcUrls.default.http[1],
     },
     [688688]: {
         id: 688688,
         name: 'Pharos Testnet',
-        icon: PharosChainIcon
+        icon: PharosChainIcon,
+        blockExplorerURI: pharosTestnet.blockExplorers.default.url,
+        rpcHttpUri: pharosTestnet.rpcUrls.default.http[1],
     }
 }
 
