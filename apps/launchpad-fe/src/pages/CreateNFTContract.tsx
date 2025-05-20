@@ -17,7 +17,6 @@ interface CreateNFTContractProps {
     managerContractAddress: Address;
 
     onCancel: () => void;
-    getUserOwnedContracts: () => Promise<readonly Address[]>;
 }
 
 const CreateNFTContract: React.FC<CreateNFTContractProps> = ({

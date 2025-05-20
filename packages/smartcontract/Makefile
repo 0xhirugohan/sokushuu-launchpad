@@ -11,6 +11,8 @@ deploy:
 	forge script $(ARG1) --account dev
 deploy-broadcast:
 	forge script $(ARG1) --account dev --broadcast --skip-simulation --rpc-url https://devnet.dplabs-internal.com/
+deploy-broadcast-pharos-testnet:
+	forge script $(ARG1) --account dev --broadcast --skip-simulation --rpc-url https://testnet.dplabs-internal.com/
 
 verify:
 	@echo "Attempting verification with:"
@@ -19,7 +21,20 @@ verify:
 	forge verify-contract \
 		--rpc-url https://devnet.dplabs-internal.com/ \
 		--verifier blockscout \
-		--verifier-url 'https://pharosscan.xyz/api/' \
+		--verifier-url 'https://devnet.pharosscan.xyz/api/' \
+		$(ARG1) \
+		$(ARG2)
+
+verify-pharos-testnet:
+	@echo "Attempting verification with:"
+	@echo "  Arg1 (Address?): $(ARG1)"
+	@echo "  Arg2 (Contract Name?): $(ARG2)"
+	forge verify-contract \
+		--rpc-url https://testnet.dplabs-internal.com/ \
+		--chain 688688 \
+		--watch --etherscan-api-key test \
+		--verifier etherscan \
+		--verifier-url 'https://testnet.pharosscan.xyz/v1/explorer/command_api/contract' \
 		$(ARG1) \
 		$(ARG2)
 

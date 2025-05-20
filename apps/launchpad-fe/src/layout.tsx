@@ -34,8 +34,7 @@ const persister = createSyncStoragePersister({
 
 const Layout: React.FC<LayoutProps> = ({ isLoginRequired }) => {
     const [address, setAddress] = useState<Address | undefined>();
-    const initialState = undefined; // FIXME
-    return <WagmiProvider config={walletConfig} initialState={initialState}>
+    return <WagmiProvider config={walletConfig}>
         <PersistQueryClientProvider client={queryClient} persistOptions={{ persister }}>
             <div className="relative min-w-40 w-full">
                 <WalletHeader setAddressProp={setAddress} />
@@ -43,7 +42,7 @@ const Layout: React.FC<LayoutProps> = ({ isLoginRequired }) => {
                     { isLoginRequired && !address && <Login /> }
                     { ((isLoginRequired && address) || !isLoginRequired) && <Outlet />}
                 </div>
-                <div className="p-4 flex gap-x-4 justify-end fixed bottom-0 left-0 right-0 bg-zinc-100 opacity-95">
+                <div className="p-4 flex gap-x-4 justify-end">
                     <a
                         href="https://x.com/sokushuu_de"
                         target="_blank"

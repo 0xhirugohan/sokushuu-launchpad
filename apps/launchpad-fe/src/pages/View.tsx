@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, NavLink } from 'react-router'
+import { useQueryClient } from '@tanstack/react-query'
 import {
     useAccount,
+    useChainId,
     useConnect,
     useReadContract,
     useWriteContract
 } from 'wagmi'
-import { readContract, readContracts } from '@wagmi/core'
+import { readContracts } from '@wagmi/core'
 import { parseEther, formatEther } from 'viem'
 
 import type { Address } from 'viem'
@@ -16,10 +18,12 @@ import {
     walletConfig,
     nftLaunchManagerAbi,
     nftLauncherAbi,
+    pharosDevnet,
 } from '../libs'
 import XIcon from '../assets/x.svg'
 
-const nftLaunchManagerAddress = import.meta.env.VITE_LAUNCH_MANAGER_PUBLIC_ADDRESS;
+const pharosDevnetNftLaunchManagerAddress = import.meta.env.VITE_PHAROS_DEVNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
+const pharosTestnetNftLaunchManagerAddress = import.meta.env.VITE_PHAROS_TESTNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
 const baseURI = import.meta.env.VITE_BACKEND_BASE_URI;
 
 interface TokenURI {
@@ -29,10 +33,13 @@ interface TokenURI {
 
 const View = () => {
     const { smartContractAddress: smartContractAddressParam, tokenId: tokenIdParam } = useParams();
+    const queryClient = useQueryClient();
     const smartContractAddress: Address = smartContractAddressParam as Address;
+    const [nftLaunchManagerAddress, setNftLaunchManagerAddress] = useState<Address>();
     const tokenId: bigint = BigInt(tokenIdParam ?? 0);
     const { address, status: addressStatus } = useAccount();
-    const { refetch } = useReadContract({
+    const chainId = useChainId();
+    const { data: tokenURI, queryKey: tokenURIQueryKey } = useReadContract({
         address: smartContractAddress,
         abi: nftLauncherAbi,
         functionName: 'tokenURI',
@@ -40,7 +47,7 @@ const View = () => {
             tokenId as bigint
         ]
     });
-    const { refetch: refetchOwnerOf } = useReadContract({
+    const { data: ownerAddress, queryKey: ownerAddressQueryKey } = useReadContract({
         address: smartContractAddress,
         abi: nftLauncherAbi,
         functionName: 'ownerOf',
@@ -48,7 +55,7 @@ const View = () => {
             tokenId as bigint
         ]
     });
-    const { refetch: refetchIsTokenOnSale } = useReadContract({
+    const { data: isTokenOnSale } = useReadContract({
         address: nftLaunchManagerAddress,
         abi: nftLaunchManagerAbi,
         functionName: 'isTokenOnSale',
@@ -57,7 +64,7 @@ const View = () => {
             tokenId,
         ]
     });
-    const { refetch: refetchTokenSalePrice } = useReadContract({
+    const { data: tokenSalePrice } = useReadContract({
         address: nftLaunchManagerAddress,
         abi: nftLaunchManagerAbi,
         functionName: 'getTokenSalePrice',
@@ -66,22 +73,19 @@ const View = () => {
             tokenId,
         ]
     });
+    const { data: tokenIdLength } = useReadContract({
+        config: walletConfig,
+        abi: nftLaunchManagerAbi,
+        address: nftLaunchManagerAddress as Address,
+        functionName: 'getContractCurrentTokenId',
+        args: [
+            smartContractAddress as Address,
+        ]
+    });
     const [imageUrl, setImageUrl] = useState<string>();
-    const [ownerAddress, setOwnerAddress] = useState<Address>();
-    const [isTokenOnSale, setIsTokenOnSale] = useState<boolean>(false);
-    const [tokenSalePrice, setTokenSalePrice] = useState<BigInt>();
     const [tokenURIs, setTokenURIs] = useState<TokenURI[]>([]);
 
     const getTokenURIs = async () => {
-        const tokenIdLength: bigint = await readContract(walletConfig, {
-            abi: nftLaunchManagerAbi,
-            address: nftLaunchManagerAddress as Address,
-            functionName: 'getContractCurrentTokenId',
-            args: [
-                smartContractAddress as Address,
-            ]
-        });
-
         const length = parseInt(`${tokenIdLength}`);
         const maxContentLength = 4;
         const contracts = Array.from({
@@ -107,12 +111,7 @@ const View = () => {
     }
 
     useEffect(() => {
-        getTokenURIs();
-    }, []);
-
-    useEffect(() => {
-        const readContract = async () => {
-            const { data: tokenURI } = await refetch();
+        const handleTokenUriChange = async () => {
             if (tokenURI === undefined) return;
 
             let url = new URL(tokenURI as string);
@@ -128,22 +127,30 @@ const View = () => {
             const json: { image: string } = await result.json();
             setImageUrl(json.image);
 
-            const resultOwnerOf = await refetchOwnerOf();
-            const ownerOfAddress = resultOwnerOf.data;
-            setOwnerAddress(ownerOfAddress);
+            await queryClient.invalidateQueries({ queryKey: ownerAddressQueryKey });
         }
-        const readOnSale = async () => {
-            const { data } = await refetchIsTokenOnSale();
-            setIsTokenOnSale(data ?? false);
+        handleTokenUriChange();
+    }, [tokenURI])
+
+    useEffect(() => {
+        if (chainId === pharosDevnet.id) {
+            setNftLaunchManagerAddress(pharosDevnetNftLaunchManagerAddress);
+            return;
         }
-        const readTokenSale = async () => {
-            const { data } = await refetchTokenSalePrice();
-            setTokenSalePrice(data);
+
+        setNftLaunchManagerAddress(pharosTestnetNftLaunchManagerAddress);
+        queryClient.invalidateQueries({ queryKey: tokenURIQueryKey });
+    }, [chainId])
+
+    useEffect(() => {
+        if (tokenIdLength && nftLaunchManagerAddress) {
+            getTokenURIs();
         }
-        readContract();
-        readOnSale();
-        readTokenSale();
-    }, [smartContractAddress, tokenId]);
+    }, [tokenIdLength, nftLaunchManagerAddress])
+
+    if (!tokenURI) return <div className="w-full min-h-screen flex justify-between items-center text-center">
+        <p className="w-full">No Token Found. Please go back to Home Screen.</p>
+    </div>
 
     return <div className="w-full min-h-screen pt-16 px-4 flex flex-col gap-y-8">
         <div className="w-full flex flex-col gap-y-4 justify-center items-center">
@@ -168,15 +175,15 @@ const View = () => {
                     { ownerAddress && <p>Owner <a className="text-blue-400 underline" href={`https://devnet.pharosscan.xyz/address/${ownerAddress}`} >{ownerAddress.slice(0, 6)}...{ownerAddress.slice(-6)}</a></p> }
                     { (tokenSalePrice && (tokenSalePrice as bigint) > BigInt(0)) ? <p>{formatEther(tokenSalePrice as bigint)} PTT</p> : <p></p> }
                 </div>
-                { addressStatus === 'connected' && address && !isTokenOnSale && ownerAddress && ownerAddress === address && <SellSection nftLaunchManagerAddress={nftLaunchManagerAddress} nftContractAddress={smartContractAddress} tokenId={tokenId} /> }
+                { addressStatus === 'connected' && address && !isTokenOnSale && ownerAddress && ownerAddress === address && <SellSection nftLaunchManagerAddress={nftLaunchManagerAddress as Address} nftContractAddress={smartContractAddress} tokenId={tokenId} /> }
                 { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress === address && <CancelSection
-                        nftLaunchManagerAddress={nftLaunchManagerAddress}
+                        nftLaunchManagerAddress={nftLaunchManagerAddress as Address}
                         nftContractAddress={smartContractAddress}
                         tokenId={tokenId}
                     />
                 }
                 { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress !== address && <BuySection
-                        nftLaunchManagerAddress={nftLaunchManagerAddress}
+                        nftLaunchManagerAddress={nftLaunchManagerAddress as Address}
                         nftContractAddress={smartContractAddress}
                         tokenId={tokenId}
                         tokenPrice={tokenSalePrice as bigint}

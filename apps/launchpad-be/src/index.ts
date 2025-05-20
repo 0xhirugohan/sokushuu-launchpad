@@ -4,7 +4,9 @@ import type { KVNamespace } from '@cloudflare/workers-types'
 
 import {
   pharosDevnetRPC,
+  pharosTestnetRPC,
   pharosDevnetFaucet,
+  pharosTestnetFaucet,
   generateImage,
   uploadImage,
   getNFTImage,
@@ -29,10 +31,12 @@ app.get('/', (c) => {
 
 const rpcs = new Hono<{ Bindings: Bindings }>().basePath('/rpc');
 rpcs.post('/pharos-devnet', pharosDevnetRPC)
+rpcs.post('/pharos-testnet', pharosTestnetRPC)
 app.route('/', rpcs);
 
 const faucets = new Hono<{ Bindings: Bindings }>().basePath('/faucet');
-faucets.post('/pharos-devnet', pharosDevnetFaucet)
+faucets.post('/50002', pharosDevnetFaucet)
+faucets.post('/688688', pharosTestnetFaucet)
 app.route('/', faucets)
 
 const llms = new Hono<{ Bindings: Bindings }>().basePath('/llm');

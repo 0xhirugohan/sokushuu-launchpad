@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
-import { readContract, readContracts } from '@wagmi/core'
+import { useChainId, useReadContract } from 'wagmi'
+import { readContracts } from '@wagmi/core'
 
 import type { Address } from 'viem';
 
@@ -9,6 +10,7 @@ import {
     walletConfig,
     nftLaunchManagerAbi,
     nftLauncherAbi,
+    pharosDevnet,
 } from '../libs'
 
 interface TokenURI {
@@ -16,24 +18,27 @@ interface TokenURI {
     tokenURI: string;
 }
 
-const nftLaunchManagerAddress = import.meta.env.VITE_LAUNCH_MANAGER_PUBLIC_ADDRESS;
+const pharosDevnetNftLaunchManagerAddress = import.meta.env.VITE_PHAROS_DEVNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
+const pharosTestnetNftLaunchManagerAddress = import.meta.env.VITE_PHAROS_TESTNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
 const baseURI = import.meta.env.VITE_BACKEND_BASE_URI;
 
 const Collection = () => {
     const { smartContractAddress: smartContractAddressParams } = useParams();
+    const [nftLaunchManagerAddress, setNftLaunchManagerAddress] = useState<Address>();
     const [tokenURIs, setTokenURIs] = useState<TokenURI[]>([]);
+    const chainId = useChainId();
     const smartContractAddress: Address = smartContractAddressParams as Address;
+    const { data: tokenIdLength } = useReadContract({
+        config: walletConfig,
+        abi: nftLaunchManagerAbi,
+        address: nftLaunchManagerAddress as Address,
+        functionName: 'getContractCurrentTokenId',
+        args: [
+            smartContractAddress as Address,
+        ]
+    });
 
     const getTokenURIs = async () => {
-        const tokenIdLength: bigint = await readContract(walletConfig, {
-            abi: nftLaunchManagerAbi,
-            address: nftLaunchManagerAddress as Address,
-            functionName: 'getContractCurrentTokenId',
-            args: [
-                smartContractAddress as Address,
-            ]
-        });
-
         const length = parseInt(`${tokenIdLength}`);
         const maxContentLength = 4;
         const contracts = Array.from({
@@ -59,13 +64,26 @@ const Collection = () => {
     }
 
     useEffect(() => {
+        if (chainId === pharosDevnet.id) {
+            setNftLaunchManagerAddress(pharosDevnetNftLaunchManagerAddress);
+            return;
+        }
+
+        setNftLaunchManagerAddress(pharosTestnetNftLaunchManagerAddress);
+    }, [chainId]);
+
+    useEffect(() => {
         getTokenURIs();
-    }, []);
+    }, [tokenIdLength])
+
+    if (!tokenIdLength) return <div className="min-h-screen w-full flex items-center">
+        <p className="w-full text-center">No tokens found in this contract. Please go back to home screen.</p>
+    </div>
 
     return <div className="flex flex-col gap-y-4 min-h-screen w-full pt-16 px-4">
         <p>Contract: {smartContractAddress.slice(0, 4)}...{smartContractAddress.slice(-4)}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-4">
-            {tokenURIs.map((token: TokenURI) => <TokenCard token={token} smartContractAddress={smartContractAddress} baseURI={baseURI} />)}
+            {tokenURIs.map((token: TokenURI) => <TokenCard key={token.tokenId} token={token} smartContractAddress={smartContractAddress} baseURI={baseURI} />)}
         </div>
     </div>
 }

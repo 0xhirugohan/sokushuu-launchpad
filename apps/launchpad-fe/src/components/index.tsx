@@ -1,9 +1,13 @@
 import { Button } from './Button'
-import WalletHeader from './WalletHeader'
 import TokenCard from './TokenCard'
+import WalletHeader from './WalletHeader'
+import WalletProfile from './WalletProfile'
+import ChainSelector from './ChainSelector'
 
 export {
     Button,
-    WalletHeader,
+    ChainSelector,
     TokenCard,
+    WalletHeader,
+    WalletProfile,
 };

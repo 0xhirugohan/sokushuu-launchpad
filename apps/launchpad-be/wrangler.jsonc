@@ -8,6 +8,7 @@
   ],
   "vars": {
     "PHAROS_DEVNET_RPC_URI": "my-variable",
+    "PHAROS_TESTNET_RPC_URI": "my-variable",
     "EVM_FAUCET_PRIVATE_KEY": "my-variable",
     "GEMINI_PRIVATE_KEY": "my-variable",
     "R2_ACCESS_KEY": "default-r2-access-key",

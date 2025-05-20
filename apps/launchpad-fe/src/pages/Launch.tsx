@@ -1,19 +1,26 @@
 import { useState, useEffect } from 'react'
-import { useAccount, useReadContract } from 'wagmi'
+import { useQueryClient } from '@tanstack/react-query'
+import { useAccount, useChainId, useReadContract } from 'wagmi'
 
 import type { Address } from 'viem'
 
 import { CreateNFTContract, PromptImage } from './'
-import { walletConfig, nftLaunchManagerAbi } from '../libs'
+import { walletConfig, nftLaunchManagerAbi, pharosDevnet } from '../libs'
 
-const managerContractAddress = import.meta.env.VITE_LAUNCH_MANAGER_PUBLIC_ADDRESS;
+const pharosDevnetManagerContractAddress = import.meta.env.VITE_PHAROS_DEVNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
+const pharosTestnetManagerContractAddress = import.meta.env.VITE_PHAROS_TESTNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
 
 const Launch = () => {
+    const queryClient = useQueryClient();
+    const chainId = useChainId();
+    const [managerContractAddress, setManagerContractAddress] = useState<Address>();
     const {
         address,
     } = useAccount({ config: walletConfig });
     const {
-        refetch: userOwnedContractRefetch
+        data: userOwnedContracts,
+        status: userOwnedContractsStatus,
+        queryKey: userOwnedContractsQueryKey,
     } = useReadContract({
         abi: nftLaunchManagerAbi,
         address: managerContractAddress,
@@ -21,32 +28,25 @@ const Launch = () => {
         config: walletConfig,
         args: [address as Address]
     });
-    const [userOwnedContracts, setUserOwnedContracts] = useState<readonly Address[]>();
-    const [userOwnedContractsStatus, setUserOwnedContractsStatus] = useState<string>();
     const [userSelectedMode, setUserSelectedMode] = useState<'contract' | 'prompt' | 'auto'>('auto');
 
-    const getUserOwnedContracts = async (): Promise<readonly Address[]> => {
-        const {
-            data,
-            status,
-            error
-        } = await userOwnedContractRefetch();
-        if (status === 'success') {
-            setUserOwnedContracts(data);
-            setUserOwnedContractsStatus(status);
-            return data;
-        } else {
-            console.log({ error });
-            return [];
-        }
-    };
+    const getUserOwnedContracts = () => {
+        queryClient.invalidateQueries({ queryKey: userOwnedContractsQueryKey });
+    }
 
     useEffect(() => {
         getUserOwnedContracts();
-    }, [])
+        if (chainId === pharosDevnet.id) {
+            setManagerContractAddress(pharosDevnetManagerContractAddress);
+            return;
+        }
+
+        setManagerContractAddress(pharosTestnetManagerContractAddress);
+    }, [chainId])
 
     const switchToPrompt = () => {
         setUserSelectedMode('prompt');
+        getUserOwnedContracts();
     }
 
     const switchToContract = () => {
@@ -56,13 +56,12 @@ const Launch = () => {
 
     if ((userOwnedContracts && userOwnedContracts?.length == 0) || userOwnedContractsStatus === 'error' || userSelectedMode === 'contract') return <CreateNFTContract
         isUserOwnNFTContract={(userOwnedContracts && userOwnedContracts.length > 0) ?? false}
-        managerContractAddress={managerContractAddress}
-        getUserOwnedContracts={getUserOwnedContracts}
+        managerContractAddress={managerContractAddress as Address}
         onCancel={switchToPrompt}
     />;
     else if (userOwnedContractsStatus === 'success' && userOwnedContracts && userOwnedContracts.length > 0) return <PromptImage
         userAddress={address ?? '0x'}
-        managerContractAddress={managerContractAddress}
+        managerContractAddress={managerContractAddress as Address}
         ownedNftContracts={userOwnedContracts}
         onAddContract={switchToContract}
     />
