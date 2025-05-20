@@ -48,10 +48,11 @@ const WalletProfile: React.FC<WalletProfileProps> = ({
                         <p>Address:</p>
                         <p className="wrap-anywhere text-right">{address}</p>
                     </div>
-                    <div className="flex justify-between">
-                        <p>Balance:</p>
-                        <p>{formatUnits(userBalance.data?.value as bigint, userBalance.data?.decimals as number)} {userBalance.data?.symbol}</p>
-                    </div>
+                    { userBalance.data && <div className="flex justify-between">
+                            <p>Balance:</p>
+                            <p>{formatUnits(userBalance.data?.value as bigint, userBalance.data?.decimals as number)} {userBalance.data?.symbol}</p>
+                        </div>
+                    }
                     <div className="flex justify-between">
                         <p>Chain:</p>
                         <div className="flex gap-x-2">

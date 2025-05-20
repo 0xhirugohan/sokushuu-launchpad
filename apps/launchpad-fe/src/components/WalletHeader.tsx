@@ -60,6 +60,7 @@ const WalletHeader: React.FC<WalletHeaderProps> = ({ setAddressProp }) => {
     })
 
     const handleLogout = async () => {
+        togglePopUpOff();
         disconnect();
     }
 
