@@ -1,17 +1,23 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router';
 import {
     useAccount,
+    useBalance,
+    useChainId,
     useConnect,
     useDisconnect,
     useAccountEffect,
     useSwitchChain,
 } from 'wagmi';
+import { useQueryClient } from '@tanstack/react-query'
 
-import type React from 'react';
-import type { Address } from 'viem';
+import type React from 'react'
+import type { Address } from 'viem'
 
-import { walletConfig } from '../libs/wallet';
+import ChainSelector from './ChainSelector'
+import WalletProfile from './WalletProfile'
+
+import { walletConfig } from '../libs';
 import WalletIcon from '../assets/wallet.svg';
 import FaucetIcon from '../assets/faucet.svg';
 import FileblockIcon from '../assets/fileblock.svg';
@@ -22,11 +28,16 @@ interface WalletHeaderProps {
 }
 
 const WalletHeader: React.FC<WalletHeaderProps> = ({ setAddressProp }) => {
+    const queryClient = useQueryClient();
     const { address, status } = useAccount({ config: walletConfig });
+    const { data: userBalance, queryKey: userBalanceQueryKey } = useBalance({ address, config: walletConfig });
+    const chainId = useChainId({ config: walletConfig });
     const { connectors, connect } = useConnect({ config: walletConfig });
     const { disconnect } = useDisconnect({ config: walletConfig });
     const { switchChain } = useSwitchChain();
-    
+    const [isPopUpShown, setIsPopUpShown] = useState<boolean>(false);
+    const [isChainSelectorPopUpShown, setIsChainSelectorPopUpShown] = useState<boolean>(false);
+
     useEffect(() => {
         if (status === 'connected') {
             setAddressProp(address);
@@ -56,6 +67,17 @@ const WalletHeader: React.FC<WalletHeaderProps> = ({ setAddressProp }) => {
        connect({ connector: connectors[0] });
     }
 
+    const togglePopUpOn = () => {
+        queryClient.invalidateQueries({ queryKey: userBalanceQueryKey });
+        setIsPopUpShown(true);
+    }
+    const togglePopUpOff = () => setIsPopUpShown(false);
+    const toggleChainSelectorPopUpOn = () => {
+        togglePopUpOff();
+        setIsChainSelectorPopUpShown(true);
+    }
+    const toggleChainSelectorPopUpOff = () => setIsChainSelectorPopUpShown(false);
+
     return <>
         <div className="absolute top-0 inset-x-0 flex justify-between">
             <NavLink
@@ -63,7 +85,7 @@ const WalletHeader: React.FC<WalletHeaderProps> = ({ setAddressProp }) => {
                 className="p-2 flex items-center justify-center"
             >
                 <img src={SokushuuImage} className="w-12 h-12 bg-transparent" />
-                <span>Sokushuu Launchpad</span>
+                <span className="hidden md:block">Sokushuu Launchpad</span>
             </NavLink>
             <div className="p-2 flex gap-x-2">
                 <div className="flex-2 flex items-center gap-x-2">
@@ -85,19 +107,12 @@ const WalletHeader: React.FC<WalletHeaderProps> = ({ setAddressProp }) => {
                     <img src={WalletIcon} />
                 </div>}
                 {address && status === 'connected' && <button
-                        onClick={handleLogout}
+                        onClick={togglePopUpOn}
                         className="p-2 px-4 flex-3 border-2 border-zinc-600 rounded-md flex gap-x-2 cursor-pointer relative group-hover:block flex justify-center"
                     >
                         <span>{address.slice(0, 4)}...{address.slice(-4)}</span>
                         <img src={WalletIcon} />
-                        {/*
-                        <button
-                            onClick={handleLogout}
-                            className="hidden in-[button:hover]:block absolute top-12 inset-x-0 p-2 border-2 border-zinc-600 rounded-md cursor-pointer"
-                        >
-                            logout
-                        </button>
-                        */}
+                        
                     </button>}
                 {!address && status === 'disconnected' && <button
                         onClick={handleConnect}
@@ -106,6 +121,24 @@ const WalletHeader: React.FC<WalletHeaderProps> = ({ setAddressProp }) => {
                         <span>Connect</span>
                         <img src={WalletIcon} />
                     </button>
+                }
+                { isPopUpShown && <div className="absolute inset-0 h-full w-full">
+                        <WalletProfile
+                            address={address as Address}
+                            chainId={chainId}
+                            userBalance={{ data: userBalance }}
+                            togglePopUpOff={togglePopUpOff}
+                            toggleChainSelectorOn={toggleChainSelectorPopUpOn}
+                            handleLogout={handleLogout}
+                        />
+                    </div>
+                }
+                { isChainSelectorPopUpShown && <div className="absolute inset-0 h-full w-full">
+                        <ChainSelector
+                            selectedChainId={chainId}
+                            onClose={toggleChainSelectorPopUpOff}
+                        />
+                    </div>
                 }
             </div>
         </div>
