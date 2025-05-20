@@ -4,6 +4,7 @@ import type { KVNamespace } from '@cloudflare/workers-types'
 
 import {
   pharosDevnetRPC,
+  pharosTestnetRPC,
   pharosDevnetFaucet,
   generateImage,
   uploadImage,
@@ -29,6 +30,7 @@ app.get('/', (c) => {
 
 const rpcs = new Hono<{ Bindings: Bindings }>().basePath('/rpc');
 rpcs.post('/pharos-devnet', pharosDevnetRPC)
+rpcs.post('/pharos-testnet', pharosTestnetRPC)
 app.route('/', rpcs);
 
 const faucets = new Hono<{ Bindings: Bindings }>().basePath('/faucet');
