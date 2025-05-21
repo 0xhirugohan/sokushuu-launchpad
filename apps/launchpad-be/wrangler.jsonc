@@ -1,0 +1,56 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "launchpad-dev-be",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-16",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "vars": {
+    "PHAROS_DEVNET_RPC_URI": "https://example.com/",
+    "PHAROS_TESTNET_RPC_URI": "https://example.com/",
+    "EVM_FAUCET_PRIVATE_KEY": "0x1",
+    "GEMINI_PRIVATE_KEY": "secret",
+    "R2_ACCESS_KEY": "access",
+    "R2_SECRET_KEY": "secret",
+    "R2_ENDPOINT": "https://bucket.example.com"
+  },
+  "kv_namespaces": [
+		{
+			"binding": "KV",
+			"id": "c971fa43207b4c5ba22f8f30a940822d"
+		}
+	],
+  // "compatibility_flags": [
+  //   "nodejs_compat"
+  // ],
+  // "vars": {
+  //   "MY_VAR": "my-variable"
+  // },
+  // "kv_namespaces": [
+  //   {
+  //     "binding": "MY_KV_NAMESPACE",
+  //     "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  //   }
+  // ],
+  // "r2_buckets": [
+  //   {
+  //     "binding": "MY_BUCKET",
+  //     "bucket_name": "my-bucket"
+  //   }
+  // ],
+  // "d1_databases": [
+  //   {
+  //     "binding": "MY_DB",
+  //     "database_name": "my-database",
+  //     "database_id": ""
+  //   }
+  // ],
+  // "ai": {
+  //   "binding": "AI"
+  // },
+  // "observability": {
+  //   "enabled": true,
+  //   "head_sampling_rate": 1
+  // }
+}
