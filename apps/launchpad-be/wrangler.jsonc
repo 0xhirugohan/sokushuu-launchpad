@@ -1,19 +1,19 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "launchpad-be",
+  "name": "launchpad-dev-be",
   "main": "src/index.ts",
   "compatibility_date": "2025-05-16",
   "compatibility_flags": [
     "nodejs_compat"
   ],
   "vars": {
-    "PHAROS_DEVNET_RPC_URI": "my-variable",
-    "PHAROS_TESTNET_RPC_URI": "my-variable",
-    "EVM_FAUCET_PRIVATE_KEY": "my-variable",
-    "GEMINI_PRIVATE_KEY": "my-variable",
-    "R2_ACCESS_KEY": "default-r2-access-key",
-		"R2_SECRET_KEY": "default-r2-secret-key",
-		"R2_ENDPOINT": "default-r2-endpoint"
+    "PHAROS_DEVNET_RPC_URI": "https://example.com/",
+    "PHAROS_TESTNET_RPC_URI": "https://example.com/",
+    "EVM_FAUCET_PRIVATE_KEY": "0x1",
+    "GEMINI_PRIVATE_KEY": "secret",
+    "R2_ACCESS_KEY": "access",
+		"R2_SECRET_KEY": "secret",
+		"R2_ENDPOINT": "https://bucket.example.com"
   },
   "kv_namespaces": [
 		{

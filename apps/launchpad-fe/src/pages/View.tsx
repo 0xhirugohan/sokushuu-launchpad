@@ -6,12 +6,14 @@ import {
     useChainId,
     useConnect,
     useReadContract,
+    useSwitchChain,
     useWriteContract
 } from 'wagmi'
 import { readContracts } from '@wagmi/core'
-import { parseEther, formatEther } from 'viem'
+import { parseEther, formatEther, fromHex, toHex } from 'viem'
 
 import type { Address } from 'viem'
+import type { WriteContractParameters } from '@wagmi/core'
 
 import { Button, TokenCard } from '../components'
 import {
@@ -19,12 +21,14 @@ import {
     nftLaunchManagerAbi,
     nftLauncherAbi,
     pharosDevnet,
+    chainMetadataByChainId,
 } from '../libs'
 import XIcon from '../assets/x.svg'
 
 const pharosDevnetNftLaunchManagerAddress = import.meta.env.VITE_PHAROS_DEVNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
 const pharosTestnetNftLaunchManagerAddress = import.meta.env.VITE_PHAROS_TESTNET_LAUNCH_MANAGER_PUBLIC_ADDRESS;
 const baseURI = import.meta.env.VITE_BACKEND_BASE_URI;
+const baseURIFrontend = import.meta.env.VITE_BASE_URI;
 
 interface TokenURI {
     tokenId: bigint;
@@ -32,14 +36,23 @@ interface TokenURI {
 }
 
 const View = () => {
-    const { smartContractAddress: smartContractAddressParam, tokenId: tokenIdParam } = useParams();
+    const {
+        smartContractAddress: smartContractAddressParam,
+        tokenId: tokenIdParam,
+        chainIdHex: chainIdHexParam,
+    } = useParams();
     const queryClient = useQueryClient();
     const smartContractAddress: Address = smartContractAddressParam as Address;
     const [nftLaunchManagerAddress, setNftLaunchManagerAddress] = useState<Address>();
     const tokenId: bigint = BigInt(tokenIdParam ?? 0);
     const { address, status: addressStatus } = useAccount();
     const chainId = useChainId();
+    const tokenChainId: number = fromHex(
+        chainIdHexParam ? chainIdHexParam as Address : toHex(chainId), 
+        'number',
+    );
     const { data: tokenURI, queryKey: tokenURIQueryKey } = useReadContract({
+        chainId: tokenChainId,
         address: smartContractAddress,
         abi: nftLauncherAbi,
         functionName: 'tokenURI',
@@ -48,6 +61,7 @@ const View = () => {
         ]
     });
     const { data: ownerAddress, queryKey: ownerAddressQueryKey } = useReadContract({
+        chainId: tokenChainId,
         address: smartContractAddress,
         abi: nftLauncherAbi,
         functionName: 'ownerOf',
@@ -56,6 +70,7 @@ const View = () => {
         ]
     });
     const { data: isTokenOnSale } = useReadContract({
+        chainId: tokenChainId,
         address: nftLaunchManagerAddress,
         abi: nftLaunchManagerAbi,
         functionName: 'isTokenOnSale',
@@ -65,6 +80,7 @@ const View = () => {
         ]
     });
     const { data: tokenSalePrice } = useReadContract({
+        chainId: tokenChainId,
         address: nftLaunchManagerAddress,
         abi: nftLaunchManagerAbi,
         functionName: 'getTokenSalePrice',
@@ -74,6 +90,7 @@ const View = () => {
         ]
     });
     const { data: tokenIdLength } = useReadContract({
+        chainId: tokenChainId,
         config: walletConfig,
         abi: nftLaunchManagerAbi,
         address: nftLaunchManagerAddress as Address,
@@ -93,6 +110,7 @@ const View = () => {
         }, (_, i) => length - i - 1
         ).map((id) => {
             return {
+                chainId: tokenChainId,
                 address: smartContractAddress as Address,
                 abi: nftLauncherAbi,
                 functionName: 'tokenURI',
@@ -133,14 +151,14 @@ const View = () => {
     }, [tokenURI])
 
     useEffect(() => {
-        if (chainId === pharosDevnet.id) {
+        if (tokenChainId === pharosDevnet.id) {
             setNftLaunchManagerAddress(pharosDevnetNftLaunchManagerAddress);
             return;
         }
 
         setNftLaunchManagerAddress(pharosTestnetNftLaunchManagerAddress);
         queryClient.invalidateQueries({ queryKey: tokenURIQueryKey });
-    }, [chainId])
+    }, [chainId, tokenChainId])
 
     useEffect(() => {
         if (tokenIdLength && nftLaunchManagerAddress) {
@@ -161,25 +179,34 @@ const View = () => {
                 <div className="flex justify-between w-full">
                     <NavLink
                         className="text-blue-400 underline"
-                        to={`/view/${smartContractAddress}`}>
+                        to={`/collection/${smartContractAddress}/${toHex(tokenChainId)}`}>
                         {smartContractAddress.slice(0, 6)}...{smartContractAddress.slice(-6)}
                     </NavLink>
                     <a
                         className="text-blue-400 underline"
-                        href={`https://devnet.pharosscan.xyz/token/${smartContractAddress}/instance/${tokenId.toString()}`}
+                        href={`${chainMetadataByChainId[tokenChainId].blockExplorerURI}/token/${smartContractAddress}/instance/${tokenId.toString()}`}
                     >
                         ID {tokenId.toString()}
                     </a>
                 </div>
                 <div className="flex justify-between w-full">
-                    { ownerAddress && <p>Owner <a className="text-blue-400 underline" href={`https://devnet.pharosscan.xyz/address/${ownerAddress}`} >{ownerAddress.slice(0, 6)}...{ownerAddress.slice(-6)}</a></p> }
+                    { ownerAddress && <p>Owner <a className="text-blue-400 underline" href={`${chainMetadataByChainId[tokenChainId].blockExplorerURI}/address/${ownerAddress}`} >{ownerAddress.slice(0, 6)}...{ownerAddress.slice(-6)}</a></p> }
                     { (tokenSalePrice && (tokenSalePrice as bigint) > BigInt(0)) ? <p>{formatEther(tokenSalePrice as bigint)} PTT</p> : <p></p> }
                 </div>
-                { addressStatus === 'connected' && address && !isTokenOnSale && ownerAddress && ownerAddress === address && <SellSection nftLaunchManagerAddress={nftLaunchManagerAddress as Address} nftContractAddress={smartContractAddress} tokenId={tokenId} /> }
+                { addressStatus === 'connected' && address && !isTokenOnSale && ownerAddress && ownerAddress === address && <SellSection
+                        nftLaunchManagerAddress={nftLaunchManagerAddress as Address}
+                        nftContractAddress={smartContractAddress}
+                        tokenId={tokenId}
+                        tokenChainId={tokenChainId}
+                        userChainId={chainId}
+                    />
+                }
                 { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress === address && <CancelSection
                         nftLaunchManagerAddress={nftLaunchManagerAddress as Address}
                         nftContractAddress={smartContractAddress}
                         tokenId={tokenId}
+                        tokenChainId={tokenChainId}
+                        userChainId={chainId}
                     />
                 }
                 { addressStatus === 'connected' && address && isTokenOnSale && ownerAddress && ownerAddress !== address && <BuySection
@@ -187,12 +214,14 @@ const View = () => {
                         nftContractAddress={smartContractAddress}
                         tokenId={tokenId}
                         tokenPrice={tokenSalePrice as bigint}
+                        tokenChainId={tokenChainId}
+                        userChainId={chainId}
                     />
                 }
                 { addressStatus === 'disconnected' && !address && isTokenOnSale && ownerAddress && ownerAddress !== address && <LoginToBuySection /> }
             </div>
             <a
-                href={`https://twitter.com/intent/tweet?text=Look%20at%20this%20NFT%20at%20@sokushuu_de.%20Are%20you%20interested?%20&url=${baseURI}/view/${smartContractAddress}/${tokenId}`}
+                href={`https://x.com/intent/tweet?text=Look%20at%20this%20NFT%20at%20@sokushuu_de.%20Are%20you%20interested?%20&url=${baseURIFrontend}/view/${smartContractAddress}/${tokenId}/${toHex(tokenChainId)}`}
                 target="_blank"
                 className="p-2 flex gap-x-2 border-2 border-zinc-600 rounded-md"
             >
@@ -203,7 +232,7 @@ const View = () => {
             <div className="flex flex-col gap-y-4">
                 <p className="text-center">See others</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 grid-rows-1 gap-x-4 gap-y-4">
-                    {tokenURIs.map(token => <TokenCard token={token} smartContractAddress={smartContractAddress} baseURI={baseURI} />)}
+                    {tokenURIs.map(token => <TokenCard key={token.tokenId} tokenChainId={tokenChainId} token={token} smartContractAddress={smartContractAddress} baseURI={baseURI} />)}
                 </div>
             </div>
         }
@@ -214,9 +243,12 @@ interface SellSectionProps {
     nftLaunchManagerAddress: Address;
     nftContractAddress: Address;
     tokenId: bigint;
+    tokenChainId: number;
+    userChainId: number;
 }
 
-const SellSection: React.FC<SellSectionProps> = ({ nftLaunchManagerAddress, nftContractAddress, tokenId }) => {
+const SellSection: React.FC<SellSectionProps> = ({ nftLaunchManagerAddress, nftContractAddress, tokenId, tokenChainId, userChainId }) => {
+    const { switchChainAsync }  = useSwitchChain({ config: walletConfig });
     const { writeContractAsync } = useWriteContract({ config: walletConfig });
     const [isSellMode, setIsSellMode] = useState<boolean>(false);
     const [sellingPrice, setSellingPrice] = useState<string>("0");
@@ -245,7 +277,13 @@ const SellSection: React.FC<SellSectionProps> = ({ nftLaunchManagerAddress, nftC
     const onSellSubmit = async () => {
         setIsLoading(true);
         try {
-            await writeContractAsync({
+            if (userChainId !== tokenChainId) {
+                await switchChainAsync({ chainId: tokenChainId });
+            }
+
+            const gas = BigInt(100000);
+            const approveContractParam: WriteContractParameters = {
+                chainId: tokenChainId,
                 abi: nftLauncherAbi,
                 address: nftContractAddress,
                 functionName: 'approve',
@@ -253,10 +291,14 @@ const SellSection: React.FC<SellSectionProps> = ({ nftLaunchManagerAddress, nftC
                     nftLaunchManagerAddress,
                     tokenId,
                 ],
-                gas: BigInt(100000),
-            });
+                gas,
+            };
+            await writeContractAsync({
+                ...approveContractParam,
+            })
 
             const hash = await writeContractAsync({
+                chainId: tokenChainId,
                 abi: nftLaunchManagerAbi,
                 address: nftLaunchManagerAddress,
                 functionName: 'listTokenToSell',
@@ -315,6 +357,8 @@ interface BuySectionProps {
     nftContractAddress: Address;
     tokenId: bigint;
     tokenPrice: bigint;
+    tokenChainId: number;
+    userChainId: number;
 }
 
 const BuySection: React.FC<BuySectionProps> = ({
@@ -322,27 +366,39 @@ const BuySection: React.FC<BuySectionProps> = ({
     nftContractAddress,
     tokenId,
     tokenPrice,
+    tokenChainId,
+    userChainId,
 }) => {
     const { writeContractAsync } = useWriteContract({ config: walletConfig });
+    const { switchChainAsync } = useSwitchChain({ config: walletConfig });
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [txHash, setTxHash] = useState<string>();
     
     const handleBuy = async () => {
         setIsLoading(true);
 
-        const hash = await writeContractAsync({
-            abi: nftLaunchManagerAbi,
-            address: nftLaunchManagerAddress,
-            functionName: 'buyListedToken',
-            args: [
-                nftContractAddress,
-                tokenId,
-            ],
-            value: tokenPrice,
-        });       
+        try {
+            if (userChainId !== tokenChainId) {
+                await switchChainAsync({ chainId: tokenChainId });
+            }
 
-        setTxHash(hash);
-        setIsLoading(false);
+            const hash = await writeContractAsync({
+                chainId: tokenChainId,
+                abi: nftLaunchManagerAbi,
+                address: nftLaunchManagerAddress,
+                functionName: 'buyListedToken',
+                args: [
+                    nftContractAddress,
+                    tokenId,
+                ],
+                value: tokenPrice,
+            });       
+
+            setTxHash(hash);
+            setIsLoading(false);
+        } catch (err) {
+            setIsLoading(false);
+        }
     }
 
     return <div className="w-full flex flex-col gap-y-4">
@@ -378,32 +434,46 @@ interface CancelSectionProps {
     nftLaunchManagerAddress: Address;
     nftContractAddress: Address;
     tokenId: bigint;
+    tokenChainId: number;
+    userChainId: number;
 }
 
 const CancelSection: React.FC<CancelSectionProps> = ({
     nftLaunchManagerAddress,
     nftContractAddress,
     tokenId,
+    tokenChainId,
+    userChainId,
 }) => {
     const { writeContractAsync } = useWriteContract({ config: walletConfig });
+    const { switchChainAsync } = useSwitchChain({ config: walletConfig });
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [txHash, setTxHash] = useState<string>();
     
     const handleCancel = async () => {
         setIsLoading(true);
 
-        const hash = await writeContractAsync({
-            abi: nftLaunchManagerAbi,
-            address: nftLaunchManagerAddress,
-            functionName: 'cancelTokenListing',
-            args: [
-                nftContractAddress,
-                tokenId,
-            ],
-        });       
+        try {
+            if (userChainId !== tokenChainId) {
+                await switchChainAsync({ chainId: tokenChainId });
+            }
 
-        setTxHash(hash);
-        setIsLoading(false);
+            const hash = await writeContractAsync({
+                chainId: tokenChainId,
+                abi: nftLaunchManagerAbi,
+                address: nftLaunchManagerAddress,
+                functionName: 'cancelTokenListing',
+                args: [
+                    nftContractAddress,
+                    tokenId,
+                ],
+            });       
+
+            setTxHash(hash);
+            setIsLoading(false);
+        } catch (err) {
+            setIsLoading(false);
+        }
     }
 
     return <div className="w-full flex flex-col gap-y-4">
