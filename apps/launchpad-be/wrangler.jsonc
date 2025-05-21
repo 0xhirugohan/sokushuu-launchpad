@@ -12,8 +12,8 @@
     "EVM_FAUCET_PRIVATE_KEY": "0x1",
     "GEMINI_PRIVATE_KEY": "secret",
     "R2_ACCESS_KEY": "access",
-		"R2_SECRET_KEY": "secret",
-		"R2_ENDPOINT": "https://bucket.example.com"
+    "R2_SECRET_KEY": "secret",
+    "R2_ENDPOINT": "https://bucket.example.com"
   },
   "kv_namespaces": [
 		{
