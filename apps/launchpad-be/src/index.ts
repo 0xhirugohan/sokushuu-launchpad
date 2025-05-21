@@ -21,7 +21,8 @@ const app = new Hono<{ Bindings: Bindings }>()
 app.use('*', cors({
   origin: [
     // 'http://localhost:5173',
-    '*.sokushuu.de'
+    'https://launchpad.sokushuu.de',
+    'https://launchpad-fe-dev.sokushuu.de',
   ]
 }))
 

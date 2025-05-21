@@ -6,10 +6,13 @@ import {
 } from 'wagmi';
 import type { Config } from 'wagmi';
 import { injected } from 'wagmi/connectors';
-import { pharosDevnet, pharosTestnet, localChain } from './chain';
+import { pharosDevnet, pharosTestnet } from './chain';
 
 const walletConfig: Config = createConfig({
-    chains: [pharosDevnet, pharosTestnet],
+    chains: [
+        pharosDevnet,
+        pharosTestnet,
+    ],
     // chains: [localChain],
     ssr: true,
     storage: createStorage({

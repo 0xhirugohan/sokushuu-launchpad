@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import { useWriteContract, useReadContracts, useReadContract } from 'wagmi'
+import {
+    useChainId,
+    useWriteContract,
+    useReadContracts,
+    useReadContract
+} from 'wagmi'
+import { toHex } from 'viem'
 
 import type React from 'react'
 import type { Address } from 'viem'
@@ -35,6 +41,7 @@ const PromptImage: React.FC<PromptImageLayoutProps> = ({
 }) => {
     const { writeContractAsync } = useWriteContract({ config: walletConfig });
     const navigate = useNavigate();
+    const chainId = useChainId();
     const [nftCollections, setNFTCollections] = useState<NFTCollectionContract[]>();
     const [isFetchingNFTs, setIsFetchingNFTs] = useState<boolean>(false);
     const [selectedNftCollection, setSelectedNftCollection] = useState<Address>();
@@ -171,7 +178,8 @@ const PromptImage: React.FC<PromptImageLayoutProps> = ({
                 return;
             }
 
-            navigate(`/view/${selectedNftCollection}/${tokenId}`);
+            setFetcherIsMinted(true);
+            navigate(`/view/${selectedNftCollection}/${tokenId}/${toHex(chainId)}`);
         } catch (err) {
             setIsFetcherLoading(false);
         }

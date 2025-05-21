@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink } from 'react-router'
+import { toHex } from 'viem'
 
 import type React from 'react'
 import type { Address } from 'viem'
@@ -13,12 +14,14 @@ interface TokenCardProps {
     token: TokenURI;
     smartContractAddress: Address;
     baseURI: string;
+    tokenChainId: number;
 }
 
 const TokenCard: React.FC<TokenCardProps> = ({
     token,
     smartContractAddress,
     baseURI,
+    tokenChainId,
 }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [imageURI, setImageURI] = useState<string>();
@@ -52,7 +55,7 @@ const TokenCard: React.FC<TokenCardProps> = ({
 
     return (
         <NavLink
-            to={`/view/${smartContractAddress}/${token.tokenId}`}
+            to={`/view/${smartContractAddress}/${token.tokenId}/${toHex(tokenChainId)}`}
             className="p-2 border-2 border-zinc-600 rounded-md flex flex-col gap-y-2 h-fit">
             <img src={imageURI} />
         </NavLink>
