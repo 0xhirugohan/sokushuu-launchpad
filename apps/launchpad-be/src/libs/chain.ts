@@ -48,7 +48,58 @@ const pharosTestnet = defineChain({
     },
 });
 
+const monadTestnet = defineChain({
+    id: 10143,
+    name: 'Monad Testnet',
+    nativeCurrency: {
+        decimals: 18,
+        name: 'MON',
+        symbol: 'MON',
+    },
+    rpcUrls: {
+        default: {
+            http: [
+                'https://testnet-rpc.monad.xyz',
+            ],
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: 'Explorer',
+            url: 'https://testnet.monadexplorer.com/'
+        }
+    },
+});
+
+const eduTestnet = defineChain({
+    id: 656476,
+    name: 'EDU Chain Testnet',
+    nativeCurrency: {
+        decimals: 18,
+        name: 'EDU',
+        symbol: 'EDU',
+    },
+    rpcUrls: {
+        default: {
+            http: [
+                'https://rpc.open-campus-codex.gelato.digital',
+            ],
+            webSocket: [
+                'wss://ws.open-campus-codex.gelato.digital'
+            ]
+        },
+    },
+    blockExplorers: {
+        default: {
+            name: 'Explorer',
+            url: 'https://edu-chain-testnet.blockscout.com/'
+        }
+    },
+});
+
 export {
     pharosDevnet as pharosDevnetChain,
     pharosTestnet as pharosTestnetChain,
+    monadTestnet as monadTestnetChain,
+    eduTestnet as eduTestnetChain,
 }
