@@ -7,6 +7,8 @@ import {
   pharosTestnetRPC,
   pharosDevnetFaucet,
   pharosTestnetFaucet,
+  monadTestnetFaucet,
+  eduTestnetFaucet,
   generateImage,
   uploadImage,
   getNFTImage,
@@ -23,6 +25,7 @@ app.use('*', cors({
     // 'http://localhost:5173',
     'https://launchpad.sokushuu.de',
     'https://launchpad-fe-dev.sokushuu.de',
+    'https://faucet.sokushuu.de',
   ]
 }))
 
@@ -38,6 +41,8 @@ app.route('/', rpcs);
 const faucets = new Hono<{ Bindings: Bindings }>().basePath('/faucet');
 faucets.post('/50002', pharosDevnetFaucet)
 faucets.post('/688688', pharosTestnetFaucet)
+faucets.post('/10143', monadTestnetFaucet)
+faucets.post('/656476', eduTestnetFaucet)
 app.route('/', faucets)
 
 const llms = new Hono<{ Bindings: Bindings }>().basePath('/llm');
